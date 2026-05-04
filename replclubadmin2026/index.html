@@ -1,0 +1,614 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>REPL CLUB — Admin</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+
+<div class="admin-wrap">
+
+  <div class="admin-bar">
+    <h1>REPL CLUB · ADMIN</h1>
+    <span class="meta">/replclubadmin2026</span>
+    <div class="right">
+      <span class="meta">현재 권한: <b style="color:var(--gold);" id="adminUser">Mila</b></span>
+      <a href="../" class="user-view" target="_blank">↗ 사용자 뷰 열기</a>
+    </div>
+  </div>
+
+  <div class="admin-tabs">
+    <button class="admin-tab active" data-tab="attendees">👥 참석자 명단</button>
+    <button class="admin-tab" data-tab="projects">📋 프로젝트 / 시상</button>
+    <button class="admin-tab" data-tab="qa">💬 Q&amp;A</button>
+    <button class="admin-tab" data-tab="content">⚙️ 콘텐츠 / 타임테이블</button>
+  </div>
+
+  <div class="admin-content">
+
+    <!-- ============ 참석자 명단 ============ -->
+    <div class="admin-pane" data-pane="attendees">
+      <div class="admin-stats">
+        <div class="stat-card">
+          <div class="stat-label">총 참석자</div>
+          <div class="stat-value" id="atTotal">-</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">승인됨</div>
+          <div class="stat-value ok" id="atApproved">-</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">레플보드 제출</div>
+          <div class="stat-value ok" id="atSubmitted">-</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">승인됐지만 미제출</div>
+          <div class="stat-value warn" id="atMissing">-</div>
+        </div>
+      </div>
+
+      <div class="admin-toolbar">
+        <input type="text" id="atSearch" placeholder="이름·이메일·팀명 검색">
+        <select id="atFilter">
+          <option value="all">전체</option>
+          <option value="approved">승인됨</option>
+          <option value="pending">승인대기</option>
+          <option value="submitted">제출함</option>
+          <option value="missing">승인됐지만 미제출 🔴</option>
+        </select>
+        <button class="admin-btn">＋ CSV 업로드 (mock)</button>
+        <span style="margin-left:auto; font-size:12px; color:#666;">현재 mock 데이터로 표시 중</span>
+      </div>
+
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>상태</th>
+            <th>이름</th>
+            <th>이메일</th>
+            <th>출처</th>
+            <th>승인</th>
+            <th>제출 팀</th>
+            <th>비고</th>
+          </tr>
+        </thead>
+        <tbody id="atTbody"></tbody>
+      </table>
+    </div>
+
+    <!-- ============ 프로젝트 / 시상 ============ -->
+    <div class="admin-pane" data-pane="projects" style="display:none;">
+
+      <div class="award-controls">
+        <div class="lock-banner">
+          🔒 시상 공개 권한: <b id="awardOwner">Mila (010-XXXX-XXXX)</b>
+          <button class="admin-btn" style="margin-left:auto;">권한 양도</button>
+        </div>
+        <div style="font-weight:700; margin-bottom:8px;">시상 단계 공개</div>
+
+        <div class="award-step-row">
+          <span class="award-step-num">[1]</span>
+          <div>1차 통과 발표 <span style="color:#888; font-size:12px;">★ 통과 팀 명단 공개</span></div>
+          <span class="award-step-status" id="step1Status">대기</span>
+          <button class="admin-btn primary" data-phase="passed">공개</button>
+        </div>
+        <div class="award-step-row">
+          <span class="award-step-num">[2]</span>
+          <div>3위 발표 <span style="color:#888; font-size:12px;">🥉 3팀 공개</span></div>
+          <span class="award-step-status" id="step2Status">대기</span>
+          <button class="admin-btn primary" data-phase="bronze">공개</button>
+        </div>
+        <div class="award-step-row">
+          <span class="award-step-num">[3]</span>
+          <div>2위 발표 <span style="color:#888; font-size:12px;">🥈 1팀 공개</span></div>
+          <span class="award-step-status" id="step3Status">대기</span>
+          <button class="admin-btn primary" data-phase="silver">공개</button>
+        </div>
+        <div class="award-step-row">
+          <span class="award-step-num">[4]</span>
+          <div>1위 발표 <span style="color:#888; font-size:12px;">🥇 1팀 공개</span></div>
+          <span class="award-step-status" id="step4Status">대기</span>
+          <button class="admin-btn primary" data-phase="gold">공개</button>
+        </div>
+
+        <div style="margin-top:12px; display:flex; gap:8px; align-items:center;">
+          <button class="admin-btn" data-phase="hidden">↩︎ 모두 비공개로 되돌리기</button>
+          <span style="font-size:12px; color:#666;">현재 단계: <b id="currentPhase">hidden</b></span>
+        </div>
+      </div>
+
+      <div class="admin-section">
+        <h2>등록 프로젝트 <span class="count" id="prjCount">-</span></h2>
+        <div class="admin-toolbar">
+          <input type="text" id="prjSearch" placeholder="팀명 검색">
+          <button class="admin-btn">⤓ CSV 내보내기</button>
+        </div>
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>팀명</th>
+              <th>팀원</th>
+              <th>연락처</th>
+              <th>한줄 소개</th>
+              <th>등록</th>
+              <th>시상 지정</th>
+              <th>액션</th>
+            </tr>
+          </thead>
+          <tbody id="prjTbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ============ Q&A ============ -->
+    <div class="admin-pane" data-pane="qa" style="display:none;">
+      <div class="admin-stats">
+        <div class="stat-card">
+          <div class="stat-label">전체 질문</div>
+          <div class="stat-value" id="qaTotalAdmin">-</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">미답변</div>
+          <div class="stat-value warn" id="qaPendingAdmin">-</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">답변 완료</div>
+          <div class="stat-value ok" id="qaDoneAdmin">-</div>
+        </div>
+      </div>
+
+      <div class="admin-toolbar">
+        <select id="qaFilterAdmin">
+          <option value="pending">미답변 우선</option>
+          <option value="all">전체</option>
+          <option value="done">답변 완료</option>
+        </select>
+      </div>
+
+      <div id="qaListAdmin" style="display:flex; flex-direction:column; gap:12px;"></div>
+    </div>
+
+    <!-- ============ 콘텐츠 / 타임테이블 ============ -->
+    <div class="admin-pane" data-pane="content" style="display:none;">
+      <div class="admin-section">
+        <h2>⏰ 타임테이블 (수동 전환)</h2>
+        <div id="timetableControl"></div>
+      </div>
+
+      <div class="admin-section">
+        <h2>📢 공지 배너</h2>
+        <div style="background:white; border:1px solid #ddd; border-radius:8px; padding:16px;">
+          <input id="noticeText" class="input" placeholder="예: 21:45 제출 마감! 5분 전입니다 ⏰" style="margin-bottom:10px;">
+          <div style="display:flex; gap:8px;">
+            <button class="admin-btn primary" id="noticeOn">배너 ON</button>
+            <button class="admin-btn" id="noticeOff">배너 OFF</button>
+            <span style="margin-left:auto; align-self:center; font-size:12px; color:#666;" id="noticeStatus">현재: OFF</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-section">
+        <h2>🛟 현장 안내 (Wi-Fi · 화장실 · 케이터링)</h2>
+        <div style="background:white; border:1px solid #ddd; border-radius:8px; padding:16px; display:grid; grid-template-columns:140px 1fr; gap:10px; align-items:center;">
+          <label>Wi-Fi SSID</label>
+          <input class="input" id="cfgSsid" value="HASHED-GUEST">
+          <label>Wi-Fi 비밀번호</label>
+          <input class="input" id="cfgWifiPw" value="replclub2026">
+          <label>화장실 위치</label>
+          <input class="input" id="cfgToilet" value="20F · ELEV. SIDE">
+          <label>케이터링 시간</label>
+          <input class="input" id="cfgFood" value="19:00 ~ 23:00">
+          <label>운영팀 연락처</label>
+          <input class="input" id="cfgPhone" value="010-0000-0000">
+          <div></div>
+          <div><button class="admin-btn primary" id="cfgSave">저장</button></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="../data.js"></script>
+<script>
+(function() {
+  // ============ Storage helpers ============
+  const STORE = {
+    projects: 'rc_projects_2026',
+    qa: 'rc_qa_2026',
+    awardPhase: 'rc_award_phase',
+    timetable: 'rc_timetable_step',
+    notice: 'rc_notice',
+    config: 'rc_config',
+  };
+
+  function load(key, fallback) {
+    const v = localStorage.getItem(key);
+    if (!v) return fallback;
+    try { return JSON.parse(v); } catch(e) { return v; }
+  }
+  function save(key, v) {
+    localStorage.setItem(key, typeof v === 'string' ? v : JSON.stringify(v));
+  }
+  function escape(s) {
+    return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+  }
+
+  // ============ Tabs ============
+  document.querySelectorAll('.admin-tab').forEach(t => {
+    t.addEventListener('click', () => {
+      document.querySelectorAll('.admin-tab').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      const pane = t.dataset.tab;
+      document.querySelectorAll('.admin-pane').forEach(p => {
+        p.style.display = p.dataset.pane === pane ? 'block' : 'none';
+      });
+    });
+  });
+
+  // ============ 참석자 명단 ============
+  function getProjects() {
+    return load(STORE.projects, RC_DATA.projects);
+  }
+  function getAttendees() {
+    // 참석자 mock + 프로젝트에서 자동 매칭
+    const attendees = [...RC_DATA.attendees];
+    const projects = getProjects();
+    // 프로젝트에 등록된 팀원 이름 → 매칭
+    attendees.forEach(a => {
+      const found = projects.find(p => (p.members || []).includes(a.name));
+      a.team = found ? found.team : null;
+    });
+    return attendees;
+  }
+
+  function renderAttendees() {
+    const all = getAttendees();
+    const search = document.getElementById('atSearch').value.toLowerCase();
+    const filter = document.getElementById('atFilter').value;
+    let list = all;
+    if (search) {
+      list = list.filter(a =>
+        (a.name||'').toLowerCase().includes(search) ||
+        (a.email||'').toLowerCase().includes(search) ||
+        (a.team||'').toLowerCase().includes(search)
+      );
+    }
+    if (filter === 'approved') list = list.filter(a => a.approved);
+    if (filter === 'pending') list = list.filter(a => !a.approved);
+    if (filter === 'submitted') list = list.filter(a => a.team);
+    if (filter === 'missing') list = list.filter(a => a.approved && !a.team);
+
+    const tb = document.getElementById('atTbody');
+    tb.innerHTML = list.map(a => {
+      const submitted = !!a.team;
+      const missing = a.approved && !submitted;
+      const statusDot = !a.approved ? 'gray' : (submitted ? 'green' : 'red');
+      const statusText = !a.approved ? '대기' : (submitted ? '제출' : '미제출');
+      return `<tr>
+        <td><span class="dot-status ${statusDot}"></span>${statusText}</td>
+        <td>${escape(a.name)}</td>
+        <td>${escape(a.email)}</td>
+        <td>${escape(a.source)}</td>
+        <td>${a.approved ? '✅' : '⏳'}</td>
+        <td>${a.team ? `<b>${escape(a.team)}</b>` : '<span style="color:#bbb;">—</span>'}</td>
+        <td>${missing ? '<span style="color:var(--red); font-weight:700;">🔴 등록 안내 필요</span>' : ''}</td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="7" style="text-align:center; color:#999; padding:24px;">조건에 맞는 참석자가 없어요</td></tr>';
+
+    // stats
+    document.getElementById('atTotal').textContent = all.length;
+    document.getElementById('atApproved').textContent = all.filter(a => a.approved).length;
+    document.getElementById('atSubmitted').textContent = all.filter(a => a.team).length;
+    document.getElementById('atMissing').textContent = all.filter(a => a.approved && !a.team).length;
+  }
+
+  document.getElementById('atSearch').addEventListener('input', renderAttendees);
+  document.getElementById('atFilter').addEventListener('change', renderAttendees);
+
+  // ============ 프로젝트 / 시상 ============
+  function renderProjects() {
+    const projects = getProjects();
+    const search = document.getElementById('prjSearch').value.toLowerCase();
+    const filtered = search
+      ? projects.filter(p => (p.team||'').toLowerCase().includes(search))
+      : projects;
+
+    document.getElementById('prjCount').textContent = projects.length;
+
+    const tb = document.getElementById('prjTbody');
+    tb.innerHTML = filtered.map(p => {
+      const phones = (p._privateMembers || []).map(m => m.phone).filter(Boolean).join(', ') || '010-XXXX-XXXX';
+      return `<tr>
+        <td><b>${escape(p.team)}</b></td>
+        <td>${(p.members||[]).map(escape).join(' · ')}</td>
+        <td style="font-family:'JetBrains Mono', monospace; font-size:12px;">${escape(phones)}</td>
+        <td style="max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escape(p.tagline)}</td>
+        <td style="font-family:'JetBrains Mono', monospace;">${escape(p.registeredAt)}</td>
+        <td>
+          <select data-award-id="${p.id}">
+            <option value="">—</option>
+            <option value="passed" ${p.award==='passed'?'selected':''}>★ 1차 통과</option>
+            <option value="bronze" ${p.award==='bronze'?'selected':''}>🥉 3위</option>
+            <option value="silver" ${p.award==='silver'?'selected':''}>🥈 2위</option>
+            <option value="gold" ${p.award==='gold'?'selected':''}>🥇 1위</option>
+          </select>
+        </td>
+        <td>
+          <button class="admin-btn" data-edit="${p.id}">✏️ 수정</button>
+          <button class="admin-btn danger" data-del="${p.id}">🗑</button>
+        </td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="7" style="text-align:center; color:#999; padding:24px;">등록된 프로젝트가 없어요</td></tr>';
+
+    // 시상 지정 select
+    tb.querySelectorAll('select[data-award-id]').forEach(sel => {
+      sel.addEventListener('change', () => {
+        const id = sel.dataset.awardId;
+        const arr = getProjects();
+        const idx = arr.findIndex(p => p.id === id);
+        if (idx >= 0) {
+          arr[idx].award = sel.value || null;
+          save(STORE.projects, arr);
+        }
+      });
+    });
+    // 삭제
+    tb.querySelectorAll('button[data-del]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (!confirm(`정말 삭제할까요?`)) return;
+        const id = btn.dataset.del;
+        save(STORE.projects, getProjects().filter(p => p.id !== id));
+        renderProjects();
+      });
+    });
+    // 수정 (강제) — 단순 alert
+    tb.querySelectorAll('button[data-edit]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.edit;
+        const p = getProjects().find(x => x.id === id);
+        const newTagline = prompt('한줄 소개 수정 (취소하면 변경 없음):', p.tagline);
+        if (newTagline !== null) {
+          const arr = getProjects();
+          const idx = arr.findIndex(x => x.id === id);
+          arr[idx].tagline = newTagline;
+          save(STORE.projects, arr);
+          renderProjects();
+        }
+      });
+    });
+  }
+
+  document.getElementById('prjSearch').addEventListener('input', renderProjects);
+
+  // 시상 단계 공개
+  function refreshPhase() {
+    const phase = load(STORE.awardPhase, 'hidden');
+    document.getElementById('currentPhase').textContent = phase;
+    const order = ['hidden','passed','bronze','silver','gold'];
+    const idx = order.indexOf(phase);
+    [1,2,3,4].forEach(i => {
+      const el = document.getElementById(`step${i}Status`);
+      if (i <= idx) {
+        el.textContent = '✅ 공개';
+        el.className = 'award-step-status done';
+      } else {
+        el.textContent = '대기';
+        el.className = 'award-step-status pending';
+      }
+    });
+  }
+  document.querySelectorAll('button[data-phase]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      save(STORE.awardPhase, btn.dataset.phase);
+      refreshPhase();
+    });
+  });
+
+  // ============ Q&A ============
+  function getQA() { return load(STORE.qa, RC_DATA.qa); }
+  function saveQA(arr) { save(STORE.qa, arr); }
+
+  function renderQA() {
+    const all = getQA();
+    const filter = document.getElementById('qaFilterAdmin').value;
+    let list = all;
+    if (filter === 'pending') list = all.filter(q => !q.reply);
+    if (filter === 'done') list = all.filter(q => q.reply);
+    // 미답변 우선 정렬
+    list = [...list].sort((a, b) => {
+      if (filter === 'pending') return (b.time||'').localeCompare(a.time||'');
+      // 미답변 위, 답변 완료 아래
+      if (!a.reply && b.reply) return -1;
+      if (a.reply && !b.reply) return 1;
+      return (b.time||'').localeCompare(a.time||'');
+    });
+
+    document.getElementById('qaTotalAdmin').textContent = all.length;
+    document.getElementById('qaPendingAdmin').textContent = all.filter(q => !q.reply).length;
+    document.getElementById('qaDoneAdmin').textContent = all.filter(q => q.reply).length;
+
+    const wrap = document.getElementById('qaListAdmin');
+    wrap.innerHTML = list.map(q => `
+      <div style="background:white; border:1px solid #ddd; border-radius:8px; padding:14px 18px;">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+          <b>${escape(q.author)}</b>
+          <span style="font-family:'JetBrains Mono', monospace; font-size:11px; color:#888;">${escape(q.time)}</span>
+          <span style="margin-left:auto; font-size:11px; padding:3px 8px; border-radius:4px; ${q.reply ? 'background:#dff5e6; color:#0a8d3a;' : 'background:#fff3a6; color:#7a5b00;'}">
+            ${q.reply ? '답변 완료' : '미답변'}
+          </span>
+        </div>
+        <div style="font-size:14.5px; margin-bottom:10px;">${escape(q.body)}</div>
+        ${q.reply ? `
+          <div style="background:#fafafa; border-left:3px solid var(--orange); padding:10px 14px; margin-bottom:10px;">
+            <div style="font-size:11px; color:var(--orange); font-weight:700; margin-bottom:4px;">REPL CLUB 빌더 · ${escape(q.reply.time)}</div>
+            <div style="font-size:13.5px;">${escape(q.reply.body)}</div>
+          </div>
+          <div style="display:flex; gap:6px;">
+            <button class="admin-btn" data-edit-reply="${q.id}">✏️ 답변 수정</button>
+            <button class="admin-btn danger" data-del-reply="${q.id}">🗑 답변 삭제</button>
+            <button class="admin-btn danger" data-del-q="${q.id}" style="margin-left:auto;">질문 삭제</button>
+          </div>
+        ` : `
+          <div style="display:flex; gap:6px;">
+            <input class="input" data-reply-input="${q.id}" placeholder="답변 작성 (REPL CLUB 빌더 명의)" style="flex:1;">
+            <button class="admin-btn primary" data-reply-submit="${q.id}">등록</button>
+            <button class="admin-btn danger" data-del-q="${q.id}">질문 삭제</button>
+          </div>
+        `}
+      </div>
+    `).join('') || '<div style="text-align:center; color:#999; padding:24px;">조건에 맞는 질문이 없어요</div>';
+
+    // 답변 등록
+    wrap.querySelectorAll('button[data-reply-submit]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.replySubmit;
+        const input = wrap.querySelector(`input[data-reply-input="${id}"]`);
+        const body = input.value.trim();
+        if (!body) return;
+        const arr = getQA();
+        const idx = arr.findIndex(x => x.id === id);
+        if (idx >= 0) {
+          const now = new Date();
+          arr[idx].reply = { body, time: `${pad(now.getHours())}:${pad(now.getMinutes())}` };
+          saveQA(arr);
+          renderQA();
+        }
+      });
+    });
+    wrap.querySelectorAll('button[data-edit-reply]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.editReply;
+        const q = getQA().find(x => x.id === id);
+        const next = prompt('답변 수정:', q.reply.body);
+        if (next !== null) {
+          const arr = getQA();
+          const idx = arr.findIndex(x => x.id === id);
+          arr[idx].reply.body = next;
+          saveQA(arr);
+          renderQA();
+        }
+      });
+    });
+    wrap.querySelectorAll('button[data-del-reply]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (!confirm('답변 삭제할까요?')) return;
+        const id = btn.dataset.delReply;
+        const arr = getQA();
+        const idx = arr.findIndex(x => x.id === id);
+        if (idx >= 0) {
+          arr[idx].reply = null;
+          saveQA(arr);
+          renderQA();
+        }
+      });
+    });
+    wrap.querySelectorAll('button[data-del-q]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (!confirm('질문 삭제할까요?')) return;
+        saveQA(getQA().filter(x => x.id !== btn.dataset.delQ));
+        renderQA();
+      });
+    });
+  }
+  function pad(n) { return String(n).padStart(2,'0'); }
+  document.getElementById('qaFilterAdmin').addEventListener('change', renderQA);
+
+  // ============ 콘텐츠 / 타임테이블 ============
+  const TIMETABLE = [
+    { time: '19:00', label: '체크인 + 간식 🍕' },
+    { time: '19:20', label: '오프닝 🎉' },
+    { time: '19:30', label: 'Replit 본사 Keynote' },
+    { time: '19:45', label: '빌드 타임 (2시간)' },
+    { time: '21:45', label: '제출 마감' },
+    { time: '22:00', label: '상위 팀 발표 🎤' },
+    { time: '22:30', label: '시상식 🏆' },
+    { time: '22:40', label: '자유 네트워킹 🍻' },
+  ];
+
+  function renderTimetable() {
+    const current = load(STORE.timetable, 3); // index of current step (default 빌드 타임)
+    const wrap = document.getElementById('timetableControl');
+    wrap.innerHTML = `<div style="background:white; border:1px solid #ddd; border-radius:8px; padding:16px;">
+      ${TIMETABLE.map((t, i) => `
+        <div class="timeline-control-row ${i < current ? 'done' : ''} ${i === current ? 'now' : ''}">
+          <span class="time">${t.time}</span>
+          <div>${i < current ? '✅' : (i === current ? '◉' : '')} ${escape(t.label)}</div>
+          <button class="admin-btn ${i === current ? 'primary' : ''}" data-step="${i}">
+            ${i < current ? '되돌리기' : (i === current ? '진행 중' : '시작')}
+          </button>
+        </div>
+      `).join('')}
+    </div>`;
+    wrap.querySelectorAll('button[data-step]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        save(STORE.timetable, parseInt(btn.dataset.step));
+        renderTimetable();
+      });
+    });
+  }
+
+  // 공지 배너
+  function renderNotice() {
+    const n = load(STORE.notice, null);
+    document.getElementById('noticeText').value = (n && n.text) || '';
+    document.getElementById('noticeStatus').innerHTML = `현재: <b style="color:${n && n.on ? 'var(--orange)' : '#999'};">${n && n.on ? 'ON' : 'OFF'}</b>`;
+  }
+  document.getElementById('noticeOn').addEventListener('click', () => {
+    save(STORE.notice, { text: document.getElementById('noticeText').value, on: true });
+    renderNotice();
+  });
+  document.getElementById('noticeOff').addEventListener('click', () => {
+    const n = load(STORE.notice, {});
+    save(STORE.notice, { ...n, on: false });
+    renderNotice();
+  });
+
+  // 현장 안내 저장
+  document.getElementById('cfgSave').addEventListener('click', () => {
+    save(STORE.config, {
+      ssid: document.getElementById('cfgSsid').value,
+      wifiPw: document.getElementById('cfgWifiPw').value,
+      toilet: document.getElementById('cfgToilet').value,
+      food: document.getElementById('cfgFood').value,
+      phone: document.getElementById('cfgPhone').value,
+    });
+    alert('현장 안내 저장됨 (사용자 페이지에 반영하려면 페이지 새로고침)');
+  });
+  function loadCfg() {
+    const c = load(STORE.config, null);
+    if (!c) return;
+    document.getElementById('cfgSsid').value = c.ssid || '';
+    document.getElementById('cfgWifiPw').value = c.wifiPw || '';
+    document.getElementById('cfgToilet').value = c.toilet || '';
+    document.getElementById('cfgFood').value = c.food || '';
+    document.getElementById('cfgPhone').value = c.phone || '';
+  }
+
+  // ============ Init ============
+  renderAttendees();
+  renderProjects();
+  refreshPhase();
+  renderQA();
+  renderTimetable();
+  renderNotice();
+  loadCfg();
+
+  // 자동 갱신 (다른 어드민/사용자 변경 반영)
+  setInterval(() => {
+    renderAttendees();
+    renderProjects();
+    refreshPhase();
+    renderQA();
+  }, 5000);
+})();
+</script>
+
+</body>
+</html>

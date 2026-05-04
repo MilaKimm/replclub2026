@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>REPL CLUB · 레플 보드</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="board">
+
+<div id="sidebar-slot"></div>
+
+<main>
+
+  <div class="banner">
+    <span class="banner-dot"></span>
+    <span>LIVE · 빌드 타임 진행 중</span>
+    <span style="opacity:0.4">|</span>
+    <span>제출 마감까지 <b id="bannerCountdown">--</b></span>
+  </div>
+
+  <div class="content">
+
+    <div class="section-head">
+      <div>
+        <div class="eyebrow"><span class="pip"></span> REPL BOARD</div>
+        <h2>오늘 만든 프로젝트</h2>
+      </div>
+      <button class="btn btn-primary" id="newProjectBtn">+ 프로젝트 등록</button>
+    </div>
+
+    <div class="board-toolbar">
+      <div class="board-toolbar-info">
+        <div class="board-toolbar-title">등록 마감 21:45</div>
+        <div class="board-toolbar-meta">1팀 1프로젝트 · 등록 시 비밀번호 설정 · 수정/삭제 시 비밀번호 입력</div>
+      </div>
+      <div class="board-toolbar-meta">
+        총 <b id="projectCount" style="color:var(--orange); font-size:14px;">-</b>팀 등록 ·
+        제출까지 <b id="boardCountdown" style="color:var(--orange);">-</b>
+      </div>
+    </div>
+
+    <!-- 시상 영역 (어드민이 단계별 공개 시 노출) -->
+    <section class="awards" id="awardsSection" style="display:none;"></section>
+
+    <!-- 전체 프로젝트 -->
+    <section>
+      <div class="section-head">
+        <div>
+          <div class="eyebrow"><span class="pip"></span> ALL PROJECTS</div>
+          <h2 style="font-size:42px;">전체 프로젝트</h2>
+        </div>
+        <span class="section-tag">최신 등록 순</span>
+      </div>
+      <div class="project-grid" id="projectGrid"></div>
+    </section>
+
+    <footer>
+      <div>REPL CLUB</div>
+      <div>POWERED BY REPLIT <span class="dot">●</span> HASHED <span class="dot">●</span> MFITLAB</div>
+      <div class="admin-entry"></div>
+      <a class="admin-entry-link" href="replclubadmin2026/">ADMIN ↗</a>
+    </footer>
+
+  </div>
+</main>
+
+<!-- ============ 등록 모달 ============ -->
+<div class="modal-overlay" id="newProjectModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title">프로젝트 등록</div>
+        <div class="modal-sub">REGISTER NEW PROJECT</div>
+      </div>
+      <button class="modal-close" data-close>✕</button>
+    </div>
+    <form id="newProjectForm" class="modal-body">
+      <div class="field">
+        <label class="field-label">팀명</label>
+        <input class="input" name="team" required maxlength="30">
+      </div>
+
+      <div class="field">
+        <label class="field-label">팀원 (최대 2명)</label>
+        <div class="field-row" style="margin-bottom:8px;">
+          <input class="input" name="member1Name" placeholder="이름" required>
+          <input class="input" name="member1Phone" placeholder="연락처 (예: 010-XXXX-XXXX)" required>
+        </div>
+        <div class="field-row">
+          <input class="input" name="member2Name" placeholder="이름 (선택)">
+          <input class="input" name="member2Phone" placeholder="연락처 (선택)">
+        </div>
+        <div class="field-help note">ℹ︎ 연락처는 운영팀 확인용으로만 사용되며, 참가자 페이지에는 노출되지 않습니다.</div>
+      </div>
+
+      <div class="field">
+        <label class="field-label">수정용 비밀번호</label>
+        <input class="input" name="password" type="password" required minlength="2">
+        <div class="field-help">프로젝트 수정·삭제 시 입력. 분실 시 운영팀에 문의.</div>
+      </div>
+
+      <div class="field">
+        <label class="field-label">프로젝트 URL</label>
+        <input class="input" name="url" type="url" placeholder="https://" required>
+      </div>
+
+      <div class="field">
+        <label class="field-label">한줄 소개</label>
+        <input class="input" name="tagline" required maxlength="80" placeholder="카드 미리보기에 노출됩니다">
+      </div>
+
+      <div class="field-divider" data-label="ABOUT YOUR PROJECT"></div>
+
+      <div class="field">
+        <label class="field-label">1. 무슨 문제를 해결하려고 하나요?</label>
+        <textarea class="textarea" name="problem" required></textarea>
+      </div>
+      <div class="field">
+        <label class="field-label">2. 누구를 위한 서비스인가요?</label>
+        <textarea class="textarea" name="target" required></textarea>
+      </div>
+      <div class="field">
+        <label class="field-label">3. 기존 방식보다 어떤 점이 나아지나요?</label>
+        <textarea class="textarea" name="better" required></textarea>
+      </div>
+      <div class="field">
+        <label class="field-label">4. 오늘 반드시 구현할 핵심 기능은?</label>
+        <textarea class="textarea" name="mvp" required></textarea>
+      </div>
+      <div class="field">
+        <label class="field-label">5. 현재 실제로 동작하는 부분은?</label>
+        <textarea class="textarea" name="progress" required></textarea>
+      </div>
+    </form>
+    <div class="modal-foot">
+      <button class="btn" data-close>취소</button>
+      <button class="btn btn-primary" id="submitNewProject">등록하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 상세 모달 ============ -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal" id="detailModalInner">
+    <!-- 동적 렌더 -->
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+<script>
+(function() {
+  const STORE_KEY = 'rc_projects_2026';
+  const AWARD_KEY = 'rc_award_phase';
+  const COMMENTS_KEY = 'rc_comments_2026';
+
+  // 데모 시상 시나리오 — 처음 방문 시 한 번만 시상자 지정
+  const DEMO_AWARDS = {
+    'p001': 'gold',
+    'p002': 'silver',
+    'p003': 'bronze',
+    'p004': 'bronze',
+    'p005': 'bronze',
+    'p006': 'passed',
+  };
+
+  function loadProjects() {
+    const saved = localStorage.getItem(STORE_KEY);
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    // 초기화: RC_DATA + 데모 시상자 지정
+    const init = RC_DATA.projects.map(p => ({ ...p, award: DEMO_AWARDS[p.id] || null }));
+    localStorage.setItem(STORE_KEY, JSON.stringify(init));
+    return init;
+  }
+  function saveProjects(p) { localStorage.setItem(STORE_KEY, JSON.stringify(p)); }
+  function getPhase() { return localStorage.getItem(AWARD_KEY) || 'hidden'; }
+
+  function loadComments() {
+    const saved = localStorage.getItem(COMMENTS_KEY);
+    if (saved) { try { return JSON.parse(saved); } catch(e) {} }
+    // 초기 mock 댓글
+    const init = {
+      'p001': [
+        { name: '일렌', body: '와 진짜 카페 사장님이 쓸 것 같은데? 데모 어디서 보여요?', time: '20:30' },
+        { name: '미쉘', body: 'UI 깔끔해요 👍', time: '20:42' },
+        { name: '지나', body: '가격 모델 어떻게 가져갈 건지 궁금', time: '21:05' },
+      ],
+      'p003': [
+        { name: '수아', body: '회고 정말 매일 안 하게 되는데 이거 쓸것 같아요', time: '20:10' },
+        { name: '재훈', body: '음성 인식 정확도 어때요?', time: '20:25' },
+      ],
+    };
+    localStorage.setItem(COMMENTS_KEY, JSON.stringify(init));
+    return init;
+  }
+  function saveComments(c) { localStorage.setItem(COMMENTS_KEY, JSON.stringify(c)); }
+
+  // 시상 뱃지 (phase에 따라 노출 여부 결정)
+  function getBadge(award, phase) {
+    if (!award || phase === 'hidden') return null;
+    const order = ['hidden','passed','bronze','silver','gold'];
+    const reveal = order.indexOf(phase);
+    if (award === 'passed' && reveal >= 1) return { cls: 'passed', label: '★ 1차 통과' };
+    if (award === 'bronze' && reveal >= 2) return { cls: 'bronze', label: '🥉 3위' };
+    if (award === 'silver' && reveal >= 3) return { cls: 'silver', label: '🥈 2위' };
+    if (award === 'gold' && reveal >= 4) return { cls: 'gold', label: '🥇 1위' };
+    // bronze/silver/gold 인데 아직 그 phase 도달 못한 경우 1차 통과 표시
+    if (['bronze','silver','gold'].includes(award) && reveal >= 1) return { cls: 'passed', label: '★ 1차 통과' };
+    return null;
+  }
+
+  function escape(s) {
+    return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+  }
+
+  function projectCard(p, phase, opts = {}) {
+    const badge = getBadge(p.award, phase);
+    const showBadge = !opts.hideBadge && badge;
+    return `<div class="project-card" data-project="${p.id}">
+      ${showBadge ? `<div class="pc-badge ${badge.cls}">${badge.label}</div>` : ''}
+      <div class="pc-title">${escape(p.team)}</div>
+      <div class="pc-tagline">${escape(p.tagline)}</div>
+      <div class="pc-meta">
+        <span class="pc-members">${p.members.map(escape).join(' · ')}</span>
+      </div>
+      <div class="pc-foot">
+        ${p.url ? `<a class="pc-link" href="${escape(p.url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">🔗 데모</a>` : ''}
+        <span class="pc-comment-count">💬 ${(loadComments()[p.id]||[]).length || p.comments || 0}</span>
+        <span class="pc-time">${escape(p.registeredAt)}</span>
+      </div>
+    </div>`;
+  }
+
+  function renderAwards(projects, phase) {
+    if (phase === 'hidden') return '';
+    const order = ['hidden','passed','bronze','silver','gold'];
+    const reveal = order.indexOf(phase);
+    let html = `<div class="section-head" style="margin-bottom:24px;">
+      <div>
+        <div class="eyebrow"><span class="pip"></span> AWARDS</div>
+        <h2 style="font-size:48px;">시상 결과</h2>
+      </div>
+      <span class="section-tag">▸ 단계별 공개 중</span>
+    </div>`;
+
+    // 1위 (gold만)
+    if (reveal >= 4) {
+      const w = projects.find(p => p.award === 'gold');
+      if (w) {
+        html += `<div class="award-tier award-1">
+          <div class="award-tier-head">
+            <span class="award-tier-medal">🥇</span> 1위
+            <span class="award-tier-meta">CHAMPION</span>
+          </div>
+          ${projectCard(w, phase)}
+        </div>`;
+      }
+    }
+    // 2위
+    if (reveal >= 3) {
+      const w = projects.find(p => p.award === 'silver');
+      if (w) {
+        html += `<div class="award-tier award-2">
+          <div class="award-tier-head">
+            <span class="award-tier-medal">🥈</span> 2위
+            <span class="award-tier-meta">RUNNER-UP</span>
+          </div>
+          <div class="project-grid">${projectCard(w, phase)}</div>
+        </div>`;
+      }
+    }
+    // 3위 (3팀)
+    if (reveal >= 2) {
+      const ws = projects.filter(p => p.award === 'bronze');
+      if (ws.length) {
+        html += `<div class="award-tier award-3">
+          <div class="award-tier-head">
+            <span class="award-tier-medal">🥉</span> 3위
+            <span class="award-tier-meta">${ws.length} TEAMS</span>
+          </div>
+          <div class="project-grid">${ws.map(p => projectCard(p, phase)).join('')}</div>
+        </div>`;
+      }
+    }
+    // 1차 통과 — passed 라벨만 가진 팀들 + 모든 시상권 팀
+    if (reveal >= 1) {
+      const passed = projects.filter(p => ['passed','bronze','silver','gold'].includes(p.award));
+      if (passed.length) {
+        html += `<div class="passed-list" style="margin-top:24px;">
+          <span class="label">★ 1차 통과 ${passed.length}팀</span>
+          ${passed.map(p => `<span class="passed-tag">${escape(p.team)}</span>`).join('')}
+        </div>`;
+      }
+    }
+    return html;
+  }
+
+  function render() {
+    const projects = loadProjects();
+    const phase = getPhase();
+    const sorted = [...projects].sort((a,b) => (b.registeredAt || '').localeCompare(a.registeredAt || ''));
+
+    document.getElementById('projectCount').textContent = projects.length;
+    document.getElementById('projectGrid').innerHTML = sorted.map(p => projectCard(p, phase)).join('');
+
+    const awardsEl = document.getElementById('awardsSection');
+    if (phase === 'hidden') {
+      awardsEl.style.display = 'none';
+      awardsEl.innerHTML = '';
+    } else {
+      awardsEl.style.display = 'block';
+      awardsEl.innerHTML = renderAwards(projects, phase);
+    }
+
+    // 카드 클릭
+    document.querySelectorAll('[data-project]').forEach(el => {
+      el.addEventListener('click', () => openDetail(el.dataset.project));
+    });
+  }
+
+  function tickBoardCountdown() {
+    const now = new Date();
+    let diff = window.RC.getDeadline() - now;
+    if (diff < 0) diff = 0;
+    const h = Math.floor(diff/3600000);
+    const m = Math.floor((diff%3600000)/60000);
+    const el = document.getElementById('boardCountdown');
+    if (el) el.textContent = `${h}h ${window.RC.pad(m)}m`;
+  }
+
+  // ============ 상세 모달 ============
+  function openDetail(id) {
+    const projects = loadProjects();
+    const p = projects.find(x => x.id === id);
+    if (!p) return;
+    const comments = loadComments()[id] || [];
+    const d = p.details || {};
+    const phase = getPhase();
+    const badge = getBadge(p.award, phase);
+
+    const inner = document.getElementById('detailModalInner');
+    inner.innerHTML = `
+      <div class="modal-head">
+        <div>
+          ${badge ? `<div class="pc-badge ${badge.cls}" style="position:static; display:inline-block; margin-bottom:8px;">${badge.label}</div>` : ''}
+          <div class="modal-title" style="font-size:36px;">${escape(p.team)}</div>
+          <div class="modal-sub">${escape((p.members||[]).join(' · '))} · ${escape(p.registeredAt)}</div>
+        </div>
+        <button class="modal-close" data-close>✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="background:var(--orange-pale); border:1px dashed var(--orange); padding:14px 18px; border-radius:10px; margin-bottom:20px; font-size:15px; line-height:1.5;">
+          <strong style="color:var(--orange-deep);">💡 한줄 소개</strong><br>
+          ${escape(p.tagline)}
+        </div>
+        ${p.url ? `<div style="margin-bottom:20px;"><a class="pc-link" href="${escape(p.url)}" target="_blank" rel="noopener">🔗 ${escape(p.url)}</a></div>` : ''}
+
+        <div class="field-divider" data-label="ABOUT"></div>
+
+        ${[
+          ['Q1. 무슨 문제를 해결하려고 하나요?', d.problem],
+          ['Q2. 누구를 위한 서비스인가요?', d.target],
+          ['Q3. 기존 방식보다 어떤 점이 나아지나요?', d.better],
+          ['Q4. 오늘 반드시 구현할 핵심 기능은?', d.mvp],
+          ['Q5. 현재 실제로 동작하는 부분은?', d.progress],
+        ].map(([q, a]) => a ? `
+          <div style="margin-bottom:18px;">
+            <div style="font-weight:700; font-size:14px; color:var(--orange-deep); margin-bottom:6px;">${q}</div>
+            <div style="font-size:14.5px; line-height:1.6; color:rgba(14,14,14,0.85);">${escape(a)}</div>
+          </div>
+        ` : '').join('')}
+
+        <div class="field-divider" data-label="COMMENTS"></div>
+
+        <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:18px;">
+          ${comments.length ? comments.map(c => `
+            <div style="background:var(--paper-2); border-radius:10px; padding:12px 16px;">
+              <div style="font-size:13px; font-weight:700; margin-bottom:4px;">${escape(c.name)} · <span style="font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--gray); font-weight:600;">${escape(c.time)}</span></div>
+              <div style="font-size:14px; line-height:1.5;">${escape(c.body)}</div>
+            </div>
+          `).join('') : '<div style="font-size:13px; color:var(--gray); font-style:italic;">아직 댓글이 없어요. 첫 댓글을 남겨주세요!</div>'}
+        </div>
+
+        <div style="display:grid; grid-template-columns:140px 1fr auto; gap:8px;">
+          <input class="input" id="commentName" placeholder="이름">
+          <input class="input" id="commentBody" placeholder="응원 한마디">
+          <button class="btn btn-primary" id="commentSubmit">등록</button>
+        </div>
+      </div>
+    `;
+    document.getElementById('detailModal').classList.add('open');
+    bindCloseButtons();
+
+    document.getElementById('commentSubmit').addEventListener('click', () => {
+      const name = document.getElementById('commentName').value.trim();
+      const body = document.getElementById('commentBody').value.trim();
+      if (!name || !body) { alert('이름과 내용을 입력해주세요'); return; }
+      const all = loadComments();
+      const arr = all[id] || [];
+      const now = new Date();
+      arr.push({ name, body, time: `${window.RC.pad(now.getHours())}:${window.RC.pad(now.getMinutes())}` });
+      all[id] = arr;
+      saveComments(all);
+      openDetail(id); // 재렌더
+    });
+  }
+
+  function bindCloseButtons() {
+    document.querySelectorAll('[data-close]').forEach(b => {
+      b.onclick = () => document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open'));
+    });
+  }
+
+  // ============ 등록 ============
+  document.getElementById('newProjectBtn').addEventListener('click', () => {
+    document.getElementById('newProjectModal').classList.add('open');
+  });
+  bindCloseButtons();
+
+  document.getElementById('submitNewProject').addEventListener('click', () => {
+    const form = document.getElementById('newProjectForm');
+    if (!form.reportValidity()) return;
+    const fd = new FormData(form);
+    const members = [{ name: fd.get('member1Name'), phone: fd.get('member1Phone') }];
+    if (fd.get('member2Name')) members.push({ name: fd.get('member2Name'), phone: fd.get('member2Phone') });
+    const now = new Date();
+    const newP = {
+      id: 'p' + Date.now(),
+      team: fd.get('team'),
+      tagline: fd.get('tagline'),
+      members: members.map(m => m.name),
+      _privateMembers: members,
+      _password: fd.get('password'),
+      url: fd.get('url'),
+      registeredAt: `${window.RC.pad(now.getHours())}:${window.RC.pad(now.getMinutes())}`,
+      comments: 0,
+      award: null,
+      details: {
+        problem: fd.get('problem'),
+        target: fd.get('target'),
+        better: fd.get('better'),
+        mvp: fd.get('mvp'),
+        progress: fd.get('progress'),
+      },
+    };
+    const projects = loadProjects();
+    projects.push(newP);
+    saveProjects(projects);
+    form.reset();
+    document.getElementById('newProjectModal').classList.remove('open');
+    render();
+    alert('등록 완료! 보드 상단에서 확인하세요.');
+  });
+
+  // overlay 클릭 시 닫기
+  document.querySelectorAll('.modal-overlay').forEach(m => {
+    m.addEventListener('click', (e) => {
+      if (e.target === m) m.classList.remove('open');
+    });
+  });
+
+  // 첫 렌더
+  render();
+  tickBoardCountdown();
+  setInterval(render, 5000); // 5초 폴링
+  setInterval(tickBoardCountdown, 1000);
+})();
+</script>
+
+</body>
+</html>

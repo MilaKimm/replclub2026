@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>REPL CLUB</title>
+<meta name="description" content="2026.05.08 — 오늘 밤, 내 손으로 만든다. 4시간 동안의 바이브 코딩 해커톤.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="home">
+
+<div id="sidebar-slot"></div>
+
+<main>
+
+  <div class="banner">
+    <span class="banner-dot"></span>
+    <span>LIVE · 빌드 타임 진행 중</span>
+    <span style="opacity:0.4">|</span>
+    <span>제출 마감까지 <b id="bannerCountdown">--</b></span>
+  </div>
+
+  <div class="content">
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="poster-wrap">
+        <div class="poster-tape"></div>
+        <img src="assets/poster.png" alt="REPL CLUB Poster" class="poster">
+      </div>
+
+      <div class="hero-text">
+        <div class="eyebrow">
+          REPL CLUB
+          <span class="pip"></span>
+          2026.05.08 FRI
+        </div>
+
+        <h1 class="hero-title">
+          <span class="row">오늘 밤,</span>
+          <span class="row">내 손으로 <span class="accent">만든다.<svg class="underline" viewBox="0 0 240 22" preserveAspectRatio="none"><path d="M4 16 Q 40 4, 90 12 T 180 10 T 236 6"/></svg></span></span>
+        </h1>
+
+        <div class="hero-loop">
+          <span class="loop-step">READ</span>
+          <span class="loop-arrow">→</span>
+          <span class="loop-step">EVAL</span>
+          <span class="loop-arrow">→</span>
+          <span class="loop-step">PRINT</span>
+          <span class="loop-arrow">→</span>
+          <span class="loop-step loop">LOOP</span>
+        </div>
+
+        <div class="chips">
+          <span class="chip">
+            <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg>
+            5/8 (FRI) 19:00–23:00
+          </span>
+          <span class="chip">
+            <svg viewBox="0 0 24 24"><path d="M12 22s7-7.5 7-13a7 7 0 1 0-14 0c0 5.5 7 13 7 13z"/><circle cx="12" cy="9" r="2.5"/></svg>
+            해시드 20F · 강남
+          </span>
+          <span class="chip">
+            <svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M6 4h12v6a6 6 0 0 1-12 0z"/><path d="M6 6H3v3a3 3 0 0 0 3 3M18 6h3v3a3 3 0 0 1-3 3"/></svg>
+            $6,000+ Replit 크레딧
+          </span>
+        </div>
+
+        <div class="partners">
+          <span class="partners-label">PARTNERS</span>
+          <div class="partners-row">
+            <span class="partner-text">Replit</span>
+            <span class="x">×</span>
+            <span class="partner-text">MarketFitLab</span>
+            <span class="x">×</span>
+            <span class="partner-text">Hashed</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TIMELINE -->
+    <section class="timeline-wrap">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow"><span class="pip"></span> TIMELINE</div>
+          <h2>4시간을 어떻게 보내나요</h2>
+        </div>
+        <span class="section-tag">▸ 운영팀이 단계 전환</span>
+      </div>
+
+      <div class="timeline">
+        <div class="tl-item done" data-reveal>
+          <div class="tl-time">19:00</div>
+          <div class="tl-label">체크인 + 간식 🍕</div>
+          <div class="tl-status">DONE</div>
+        </div>
+        <div class="tl-item done" data-reveal>
+          <div class="tl-time">19:20</div>
+          <div class="tl-label">오프닝 🎉</div>
+          <div class="tl-status">DONE</div>
+        </div>
+        <div class="tl-item done" data-reveal>
+          <div class="tl-time">19:30</div>
+          <div class="tl-label">Replit 본사 Keynote</div>
+          <div class="tl-status">DONE</div>
+        </div>
+
+        <div class="tl-item now" data-reveal>
+          <div class="tl-now-block">
+            <div class="tl-time">19:45</div>
+            <div>
+              <div class="tl-label">빌드 타임 — 2시간</div>
+              <div class="tl-status" style="margin-top:8px; display:inline-block">▸ NOW BUILDING</div>
+            </div>
+          </div>
+          <div class="countdown">
+            <div class="countdown-label">제출 마감까지</div>
+            <div class="countdown-time" id="countdown">--</div>
+          </div>
+        </div>
+
+        <div class="tl-item" data-reveal>
+          <div class="tl-time">21:45</div>
+          <div class="tl-label">제출 마감</div>
+          <div class="tl-status">UP NEXT</div>
+        </div>
+        <div class="tl-item" data-reveal>
+          <div class="tl-time">22:00</div>
+          <div class="tl-label">상위 팀 발표 🎤</div>
+          <div class="tl-status">SOON</div>
+        </div>
+        <div class="tl-item" data-reveal>
+          <div class="tl-time">22:30</div>
+          <div class="tl-label">시상식 🏆</div>
+          <div class="tl-status">SOON</div>
+        </div>
+        <div class="tl-item" data-reveal>
+          <div class="tl-time">22:40</div>
+          <div class="tl-label">자유 네트워킹 🍻</div>
+          <div class="tl-status">SOON</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- INFO -->
+    <section>
+      <div class="section-head">
+        <div>
+          <div class="eyebrow"><span class="pip"></span> ON-SITE INFO</div>
+          <h2>현장에서 알아두면 좋아요</h2>
+        </div>
+        <span class="section-tag">실시간 업데이트</span>
+      </div>
+
+      <div class="info-grid">
+        <div class="info-card" data-reveal>
+          <span class="info-num">01 / WIFI</span>
+          <div class="info-icon">📡</div>
+          <h3 class="info-title">WI-FI</h3>
+          <p class="info-desc">SSID와 비밀번호로 빠르게 접속하세요. 빌드 시간 동안 끊김 없이 사용 가능합니다.</p>
+          <div class="info-divider"></div>
+          <div class="info-meta">
+            SSID  <span class="info-key">HASHED-GUEST</span><br><br>
+            PW    <span class="info-key">replclub2026</span>
+          </div>
+        </div>
+
+        <div class="info-card" data-reveal>
+          <span class="info-num">02 / RESTROOM</span>
+          <div class="info-icon">🚻</div>
+          <h3 class="info-title">화장실</h3>
+          <p class="info-desc">엘리베이터 옆 복도 끝. 같은 20층에 위치해서 도보 30초 거리.</p>
+          <div class="info-divider"></div>
+          <div class="info-meta">
+            POSITION  <span class="info-key">20F · ELEV. SIDE</span>
+          </div>
+        </div>
+
+        <div class="info-card" data-reveal>
+          <span class="info-num">03 / FOOD</span>
+          <div class="info-icon">🍕</div>
+          <h3 class="info-title">케이터링</h3>
+          <p class="info-desc">19:00부터 다과·피자·음료 무한 리필. 카페인은 빌드 동안 자유롭게.</p>
+          <div class="info-divider"></div>
+          <div class="info-meta">
+            HOURS  <span class="info-key">19:00 ~ 23:00</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="contact-bar">
+        <div class="contact-left">
+          <span class="label">SOS</span>
+          <span>운영팀 비상 연락처</span>
+          <span class="contact-num">010-0000-0000</span>
+        </div>
+        <span class="contact-cta">▸ 무엇이든 도와드려요</span>
+      </div>
+    </section>
+
+    <footer>
+      <div>REPL CLUB</div>
+      <div>POWERED BY REPLIT <span class="dot">●</span> HASHED <span class="dot">●</span> MFITLAB</div>
+      <div class="admin-entry"></div>
+      <a class="admin-entry-link" href="replclubadmin2026/">ADMIN ↗</a>
+    </footer>
+
+  </div>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>
