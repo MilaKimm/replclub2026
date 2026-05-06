@@ -33,8 +33,9 @@
         </div>
 
         <h1 class="hero-title">
-          <span class="row">오늘 밤,</span>
-          <span class="row">내 손으로 <span class="accent">만든다.<svg class="underline" viewBox="0 0 240 22" preserveAspectRatio="none"><path d="M4 16 Q 40 4, 90 12 T 180 10 T 236 6"/></svg></span></span>
+          <span class="row">코딩 몰라도 OK</span>
+          <span class="row">말하는대로 만들어지는</span>
+          <span class="row"><span class="accent">REPL CLUB<svg class="underline" viewBox="0 0 240 22" preserveAspectRatio="none"><path d="M4 16 Q 40 4, 90 12 T 180 10 T 236 6"/></svg></span></span>
         </h1>
 
         <div class="hero-loop">
@@ -75,12 +76,16 @@
       </div>
     </section>
 
-    <!-- TIMELINE -->
-    <section class="timeline-wrap">
+    <a class="scroll-cue" href="#timetable">
+      <span class="scroll-cue-text">TIMETABLE</span>
+      <span class="scroll-cue-arrow">↓</span>
+    </a>
+
+    <!-- TIMETABLE -->
+    <section class="timeline-wrap" id="timetable">
       <div class="section-head">
         <div>
-          <div class="eyebrow"><span class="pip"></span> TIMELINE</div>
-          <h2>4시간을 어떻게 보내나요</h2>
+          <h2>Timetable</h2>
         </div>
         <span class="section-tag">▸ 운영팀이 단계 전환</span>
       </div>
@@ -89,17 +94,17 @@
         <div class="tl-item done" data-reveal>
           <div class="tl-time">19:00</div>
           <div class="tl-label">체크인 + 간식 🍕</div>
-          <div class="tl-status">DONE</div>
+          <div class="tl-status" data-status="done">DONE</div>
         </div>
         <div class="tl-item done" data-reveal>
           <div class="tl-time">19:20</div>
           <div class="tl-label">오프닝 🎉</div>
-          <div class="tl-status">DONE</div>
+          <div class="tl-status" data-status="done">DONE</div>
         </div>
         <div class="tl-item done" data-reveal>
           <div class="tl-time">19:30</div>
           <div class="tl-label">Replit 본사 Keynote <a class="tl-link" href="https://replit-douzone-hackathon.replit.app/" target="_blank" rel="noopener">📄 발표자료 ↗</a></div>
-          <div class="tl-status">DONE</div>
+          <div class="tl-status" data-status="done">DONE</div>
         </div>
 
         <div class="tl-item now" data-reveal>
@@ -119,29 +124,29 @@
         <div class="tl-item" data-reveal>
           <div class="tl-time">21:45</div>
           <div class="tl-label">제출 마감</div>
-          <div class="tl-status">UP NEXT</div>
+          <div class="tl-status" data-status="next">UP NEXT</div>
         </div>
         <div class="tl-item" data-reveal>
           <div class="tl-time">22:00</div>
           <div class="tl-label">상위 팀 발표 🎤</div>
-          <div class="tl-status">SOON</div>
+          <div class="tl-status" data-status="soon">SOON</div>
         </div>
         <div class="tl-item" data-reveal>
           <div class="tl-time">22:30</div>
           <div class="tl-label">시상식 🏆</div>
-          <div class="tl-status">SOON</div>
+          <div class="tl-status" data-status="soon">SOON</div>
         </div>
         <div class="tl-item" data-reveal>
           <div class="tl-time">22:40</div>
           <div class="tl-label">자유 네트워킹 🍻</div>
-          <div class="tl-status">SOON</div>
+          <div class="tl-status" data-status="soon">SOON</div>
         </div>
       </div>
     </section>
 
     <footer>
       <div>REPL CLUB</div>
-      <div>POWERED BY REPLIT <span class="dot">●</span> HASHED <span class="dot">●</span> MFITLAB</div>
+      <div>(주)마켓핏랩 <span class="dot">●</span> © 2026 MarketFitLab Inc. All rights reserved.</div>
       <div class="admin-entry"></div>
       <a class="admin-entry-link" href="replclubadmin2026/">ADMIN ↗</a>
     </footer>
