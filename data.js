@@ -9,6 +9,65 @@ window.RC_DATA = {
     sosPhone: '010-0000-0000',
     wifi: { ssid: 'HASHED-GUEST', pw: 'replclub2026' },
     awards: { gold: 1, silver: 1, bronze: 3, passed: 6 },
+    toiletLocation: '20F · 엘리베이터 옆',
+    foodHours: '19:00 ~ 23:00',
+  },
+
+  timetable: [
+    { time: '19:00', label: '체크인 + 간식 🍕', link: null },
+    { time: '19:20', label: '오프닝 🎉', link: 'https://replit.com/@replclub/opening' },
+    { time: '19:30', label: 'Replit 본사 Keynote', link: 'https://replit.com/@replclub/keynote' },
+    { time: '19:45', label: '빌드 타임 — 2시간', link: null, isNow: true },
+    { time: '21:45', label: '제출 마감', link: null },
+    { time: '22:00', label: '상위 팀 발표 🎤', link: null },
+    { time: '22:30', label: '시상식 🏆', link: null },
+    { time: '22:40', label: '자유 네트워킹 🍻', link: null },
+  ],
+
+  replitGuide: [
+    {
+      title: '계정 만들기',
+      desc: 'replit.com 에서 이메일로 가입. Google 계정 연동도 가능합니다. Pro 크레딧을 받으려면 LUMA 등록 시 사용한 이메일과 동일하게 가입해주세요.',
+      link: 'https://replit.com/signup',
+      linkLabel: '회원가입 →',
+    },
+    {
+      title: '첫 프로젝트 만들기',
+      desc: '대시보드 우측 상단 "Create" → 자연어로 만들고 싶은 걸 설명하면 Replit Agent가 코드·DB·배포까지 한 번에. 4시간 빌드에 가장 추천하는 흐름.',
+      link: 'https://docs.replit.com/replit-app',
+      linkLabel: 'Agent 가이드 →',
+    },
+    {
+      title: 'Pro 크레딧 활용',
+      desc: '행사 당일 본인 Replit 계정에 $100 상당 Pro 구독이 자동 지급됩니다. 빌드·배포·DB 호스팅 모두 크레딧으로 사용 가능.',
+      link: null,
+      linkLabel: null,
+    },
+    {
+      title: '막힐 때 도움 받기',
+      desc: '운영팀 부스(20층 입구) 또는 질문 보드에 등록 → REPL CLUB 빌더가 답변. Replit 공식 문서도 풍부합니다.',
+      link: 'https://docs.replit.com',
+      linkLabel: '공식 문서 →',
+    },
+  ],
+
+  judging: {
+    judges: [
+      { name: 'Replit 본사', role: '글로벌 1위 바이브 코딩 플랫폼' },
+      { name: 'Hashed', role: '한국 대표 블록체인·Web3 VC' },
+      { name: '마켓핏랩', role: 'Replit 한국 공식 파트너' },
+    ],
+    process: [
+      '1차 — 통과 6팀 선정',
+      '2차 — 통과 6팀 안에서 1·2·3위 선정',
+    ],
+    criteria: [
+      { name: '비즈니스 임팩트', weight: 40 },
+      { name: '완성도', weight: 30 },
+      { name: '창의성', weight: 20 },
+      { name: '발표력', weight: 10 },
+    ],
+    presentation: '팀당 발표 5분 + Q&A 2분',
   },
 
   // 시상 단계 공개 상태 (어드민 단계별 공개 시뮬레이션)

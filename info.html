@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>REPL CLUB · 안내</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="info">
+
+<div id="sidebar-slot"></div>
+
+<main>
+  <div class="content">
+
+    <div class="section-head" style="margin-bottom:24px;">
+      <div>
+        <div class="eyebrow"><span class="pip"></span> INFO</div>
+        <h2>행사 안내</h2>
+      </div>
+      <span class="section-tag">현장 정보 · Replit · 심사</span>
+    </div>
+    <p style="font-size:15px; color:rgba(14,14,14,0.7); line-height:1.6; max-width:680px; margin-bottom:24px;">
+      현장에서 알아두면 좋을 정보, Replit 빠르게 시작하는 법, 심사 운영안을 한 페이지에 정리했습니다.
+    </p>
+
+    <!-- A. 현장 안내 -->
+    <section class="info-section">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow"><span class="pip"></span> ON-SITE</div>
+          <h2 style="font-size:42px;">🛟 현장 안내</h2>
+        </div>
+      </div>
+      <div class="onsite-grid">
+        <div class="info-card" style="transform:none;">
+          <div class="info-icon">📡</div>
+          <h3 class="info-title">WI-FI</h3>
+          <div class="info-meta">
+            SSID  <span class="info-key" id="cfgSsidView">HASHED-GUEST</span><br><br>
+            PW    <span class="info-key" id="cfgWifiPwView">replclub2026</span>
+          </div>
+        </div>
+        <div class="info-card" style="transform:none;">
+          <div class="info-icon">🚻</div>
+          <h3 class="info-title">화장실</h3>
+          <div class="info-meta">
+            POSITION  <span class="info-key" id="cfgToiletView">20F · 엘베 옆</span>
+          </div>
+        </div>
+        <div class="info-card" style="transform:none;">
+          <div class="info-icon">🍕</div>
+          <h3 class="info-title">케이터링</h3>
+          <div class="info-meta">
+            HOURS  <span class="info-key" id="cfgFoodView">19:00 ~ 23:00</span>
+          </div>
+        </div>
+        <div class="info-card" style="transform:none;">
+          <div class="info-icon">📞</div>
+          <h3 class="info-title">SOS</h3>
+          <div class="info-meta">
+            CONTACT  <span class="info-key" id="cfgPhoneView">010-0000-0000</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- B. Replit 사용법 -->
+    <section class="info-section">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow"><span class="pip"></span> REPLIT GUIDE</div>
+          <h2 style="font-size:42px;">🚀 Replit 사용법</h2>
+        </div>
+      </div>
+      <div class="guide-grid" id="guideGrid"></div>
+    </section>
+
+    <!-- C. 심사 운영안 -->
+    <section class="info-section">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow"><span class="pip"></span> JUDGING</div>
+          <h2 style="font-size:42px;">🧑‍⚖️ 심사 운영안</h2>
+        </div>
+      </div>
+
+      <div class="judging-grid">
+        <div class="judging-block">
+          <h3>심사위원</h3>
+          <ul class="judges-list" id="judgesList"></ul>
+        </div>
+        <div class="judging-block">
+          <h3>심사 흐름</h3>
+          <ul class="process-list" id="processList"></ul>
+        </div>
+      </div>
+
+      <div class="judging-block" style="margin-top:16px;">
+        <h3>평가 기준</h3>
+        <div class="criteria-list" id="criteriaList"></div>
+      </div>
+
+      <div class="presentation-note">
+        <span class="label">발표</span>
+        <span id="presentationNote">팀당 발표 5분 + Q&amp;A 2분</span>
+      </div>
+    </section>
+
+    <footer>
+      <div>REPL CLUB</div>
+      <div>POWERED BY REPLIT <span class="dot">●</span> HASHED <span class="dot">●</span> MFITLAB</div>
+      <div class="admin-entry"></div>
+      <a class="admin-entry-link" href="replclubadmin2026/">ADMIN ↗</a>
+    </footer>
+
+  </div>
+</main>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+<script>
+(function () {
+  // 현장 안내 - localStorage config 우선, 없으면 RC_DATA.config
+  const cfg = (() => { try { return JSON.parse(localStorage.getItem('rc_config')) || {}; } catch (e) { return {}; } })();
+  const c = RC_DATA.config;
+  document.getElementById('cfgSsidView').textContent = cfg.ssid || c.wifi.ssid;
+  document.getElementById('cfgWifiPwView').textContent = cfg.wifiPw || c.wifi.pw;
+  document.getElementById('cfgToiletView').textContent = cfg.toilet || c.toiletLocation;
+  document.getElementById('cfgFoodView').textContent = cfg.food || c.foodHours;
+  document.getElementById('cfgPhoneView').textContent = cfg.phone || c.sosPhone;
+
+  function escape(s) {
+    return String(s ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[ch]);
+  }
+
+  // Replit 가이드
+  const gg = document.getElementById('guideGrid');
+  gg.innerHTML = RC_DATA.replitGuide.map((g, i) => `
+    <div class="guide-card">
+      <div class="num">0${i + 1} / GUIDE</div>
+      <h3>${escape(g.title)}</h3>
+      <p>${escape(g.desc)}</p>
+      ${g.link ? `<a href="${escape(g.link)}" target="_blank" rel="noopener">${escape(g.linkLabel || g.link)}</a>` : ''}
+    </div>
+  `).join('');
+
+  // 심사위원
+  document.getElementById('judgesList').innerHTML = RC_DATA.judging.judges.map(j => `
+    <li><b>${escape(j.name)}</b><span>${escape(j.role)}</span></li>
+  `).join('');
+
+  // 심사 흐름
+  document.getElementById('processList').innerHTML = RC_DATA.judging.process.map(p => `<li>${escape(p)}</li>`).join('');
+
+  // 평가 기준
+  document.getElementById('criteriaList').innerHTML = RC_DATA.judging.criteria.map(cr => `
+    <div class="criteria-row">
+      <div class="criteria-name">${escape(cr.name)}</div>
+      <div class="criteria-bar-wrap"><div class="criteria-bar" style="width:${cr.weight}%"></div></div>
+      <div class="criteria-pct">${cr.weight}%</div>
+    </div>
+  `).join('');
+
+  // 발표 방식
+  document.getElementById('presentationNote').textContent = RC_DATA.judging.presentation;
+})();
+</script>
+
+</body>
+</html>

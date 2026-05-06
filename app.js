@@ -3,20 +3,18 @@
 
   const SIDEBAR_HTML = `
     <aside class="sidebar">
-      <div>
-        <div class="brand-row">
-          <div class="brand-mark"><span></span><span></span><span></span><span></span></div>
-          <div class="brand">REPL<br>CLUB</div>
-        </div>
-      </div>
+      <a href="index.html" class="brand-link">
+        <img src="assets/logo.svg" alt="REPL CLUB" class="brand-logo">
+      </a>
       <div class="clock-card">
         <div class="clock-label">SEOUL · KST</div>
         <div class="clock" id="clock">--<span class="colon">:</span>--<span class="colon">:</span>--</div>
       </div>
       <ul class="menu">
         <li><a href="index.html" data-page="home"><span class="num">01</span> 홈</a></li>
-        <li><a href="board.html" data-page="board"><span class="num">02</span> 레플 보드</a></li>
-        <li><a href="qa.html" data-page="qa"><span class="num">03</span> 질문 보드</a></li>
+        <li><a href="info.html" data-page="info"><span class="num">02</span> 안내</a></li>
+        <li><a href="board.html" data-page="board"><span class="num">03</span> 레플 보드</a></li>
+        <li><a href="qa.html" data-page="qa"><span class="num">04</span> 질문 보드</a></li>
       </ul>
       <div class="qr">
         <div class="qr-img">
