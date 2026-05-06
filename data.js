@@ -15,8 +15,8 @@ window.RC_DATA = {
 
   timetable: [
     { time: '19:00', label: '체크인 + 간식 🍕', link: null },
-    { time: '19:20', label: '오프닝 🎉', link: 'https://replit.com/@replclub/opening' },
-    { time: '19:30', label: 'Replit 본사 Keynote', link: 'https://replit.com/@replclub/keynote' },
+    { time: '19:20', label: '오프닝 🎉', link: null },
+    { time: '19:30', label: 'Replit 본사 Keynote', link: 'https://replit-douzone-hackathon.replit.app/' },
     { time: '19:45', label: '빌드 타임 — 2시간', link: null, isNow: true },
     { time: '21:45', label: '제출 마감', link: null },
     { time: '22:00', label: '상위 팀 발표 🎤', link: null },
@@ -67,7 +67,7 @@ window.RC_DATA = {
       { name: '창의성', weight: 20 },
       { name: '발표력', weight: 10 },
     ],
-    presentation: '팀당 발표 5분 + Q&A 2분',
+    presentation: '발표 방식·시간 추후 안내',
   },
 
   // 시상 단계 공개 상태 (어드민 단계별 공개 시뮬레이션)
