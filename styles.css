@@ -218,13 +218,15 @@ main { margin-left: 248px; min-height: 100vh; position: relative; }
 /* ============ HERO (HOME) ============ */
 .hero {
   display: grid;
-  grid-template-columns: 5fr 6fr;
-  gap: 56px;
+  grid-template-columns: 360px 1fr;
+  gap: 48px;
   align-items: center;
   margin-bottom: 24px;
   position: relative;
+  max-width: 880px;
 }
-.hero .poster-wrap { max-width: 320px; margin: 0 auto; }
+.hero .poster-wrap { max-width: 360px; margin: 0; }
+.hero .hero-text { max-width: 420px; }
 
 .scroll-cue {
   display: flex;
@@ -279,11 +281,11 @@ main { margin-left: 248px; min-height: 100vh; position: relative; }
 
 .hero-title {
   font-family: 'Anton', sans-serif;
-  font-size: clamp(44px, 5.8vw, 84px);
+  font-size: clamp(32px, 3.8vw, 52px);
   line-height: 1.16;
   letter-spacing: -0.005em;
   color: var(--ink);
-  margin-bottom: 28px;
+  margin-bottom: 24px;
 }
 .hero-title .row { display: block; }
 .hero-title .accent {
@@ -358,9 +360,15 @@ main { margin-left: 248px; min-height: 100vh; position: relative; }
   color: var(--gray);
 }
 .partners-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.partner-logo {
+  height: 24px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+}
 .partner-text {
   font-family: 'Anton', sans-serif;
-  font-size: 24px;
+  font-size: 22px;
   letter-spacing: 0.05em;
   color: var(--ink);
 }
