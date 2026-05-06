@@ -221,7 +221,7 @@ main { margin-left: 248px; min-height: 100vh; position: relative; }
   grid-template-columns: 360px 1fr;
   gap: 80px;
   align-items: center;
-  margin-bottom: 32px;
+  margin-bottom: 96px;
   position: relative;
 }
 .hero .poster-wrap { max-width: 360px; margin: 0; }
@@ -257,7 +257,7 @@ main { margin-left: 248px; min-height: 100vh; position: relative; }
 .hero-title {
   font-family: 'Anton', sans-serif;
   font-size: clamp(36px, 4.4vw, 64px);
-  line-height: 1.16;
+  line-height: 1.4;
   letter-spacing: -0.005em;
   color: var(--ink);
   margin-bottom: 28px;
