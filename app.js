@@ -71,10 +71,10 @@
   function tickCountdown() {
     const now = new Date();
     let diff = getDeadline() - now;
-    let label = '제출 마감까지';
+    let label = '최종 제출 마감까지';
     if (diff <= 0) {
       diff = 0;
-      label = '제출 마감';
+      label = '최종 제출 마감';
     }
     const h = Math.floor(diff / 3600000);
     const m = Math.floor((diff % 3600000) / 60000);
@@ -103,28 +103,113 @@
     });
   }
 
-  // 어드민이 저장한 타임테이블 시간 → .tl-time 텍스트에 적용
-  function applyCustomTimetableTimes() {
+  function escapeHtml(s) {
+    return String(s ?? '').replace(/[&<>"']/g, c => (
+      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+    ));
+  }
+
+  // 어드민이 저장한 타임테이블 시간 가져오기 (없으면 data.js의 기본값 사용)
+  function getTimetableData() {
+    const base = (window.RC_DATA && window.RC_DATA.timetable) || [];
+    let adminTimes = null;
     try {
       const raw = localStorage.getItem('rc_timetable_times');
-      if (!raw) return;
-      const times = JSON.parse(raw);
-      if (!Array.isArray(times)) return;
-      document.querySelectorAll('.tl-item .tl-time').forEach((el, i) => {
-        if (times[i]) el.textContent = times[i];
-      });
+      if (raw) adminTimes = JSON.parse(raw);
     } catch (e) {}
+    return base.map((item, i) => ({
+      ...item,
+      time: (Array.isArray(adminTimes) && adminTimes[i]) ? adminTimes[i] : item.time,
+    }));
+  }
+
+  // 현재 시간에 따라 진행 중인 단계 인덱스 계산
+  function computeCurrentIdx(items) {
+    const now = new Date();
+    const nowM = now.getHours() * 60 + now.getMinutes();
+    let idx = -1;
+    for (let i = 0; i < items.length; i++) {
+      const parts = String(items[i].time).split(':').map(n => parseInt(n));
+      const m = (parts[0] || 0) * 60 + (parts[1] || 0);
+      if (nowM >= m) idx = i;
+      else break;
+    }
+    return idx;
+  }
+
+  // 홈 타임테이블 동적 렌더 (현재 시간 기반 자동 진행)
+  function renderHomeTimetable() {
+    const wrap = document.getElementById('timeline');
+    if (!wrap) return;
+    const items = getTimetableData();
+    if (!items.length) return;
+
+    const currentIdx = computeCurrentIdx(items);
+
+    wrap.innerHTML = items.map((t, i) => {
+      const isDone = i < currentIdx;
+      const isNow = i === currentIdx;
+      const isNext = i === currentIdx + 1;
+      const linkHtml = t.link
+        ? ` <a class="tl-link" href="${escapeHtml(t.link)}" target="_blank" rel="noopener">📄 발표자료 ↗</a>`
+        : '';
+
+      if (isNow) {
+        return `<div class="tl-item now">
+          <div class="tl-now-block">
+            <div class="tl-time">${escapeHtml(t.time)}</div>
+            <div>
+              <div class="tl-label">${escapeHtml(t.label)}${linkHtml}</div>
+              <div class="tl-status" style="margin-top:8px; display:inline-block">▸ NOW</div>
+            </div>
+          </div>
+          <div class="countdown">
+            <div class="countdown-label">최종 제출 마감까지</div>
+            <div class="countdown-time" id="countdown">--</div>
+          </div>
+        </div>`;
+      }
+
+      const status = isDone ? 'done' : (isNext ? 'next' : 'soon');
+      const label = isDone ? 'DONE' : (isNext ? 'UP NEXT' : 'SOON');
+      return `<div class="tl-item${isDone ? ' done' : ''}">
+        <div class="tl-time">${escapeHtml(t.time)}</div>
+        <div class="tl-label">${escapeHtml(t.label)}${linkHtml}</div>
+        <div class="tl-status" data-status="${status}">${label}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // 단계 변경 또는 어드민 시간 변경을 감지해 재렌더
+  let lastTimetableSig = '';
+  function tickTimetable() {
+    const wrap = document.getElementById('timeline');
+    if (!wrap) return;
+    const items = getTimetableData();
+    if (!items.length) return;
+    const currentIdx = computeCurrentIdx(items);
+    const sig = currentIdx + '|' + items.map(t => t.time).join(',');
+    if (sig === lastTimetableSig) return;
+    lastTimetableSig = sig;
+    renderHomeTimetable();
   }
 
   document.addEventListener('DOMContentLoaded', () => {
     const active = document.body.dataset.page;
     injectSidebar(active);
     tickClock();
-    tickCountdown();
     setInterval(tickClock, 1000);
+    // 홈 타임테이블 첫 렌더 후 카운트다운 시작 (countdown id가 그 안에 있음)
+    renderHomeTimetable();
+    lastTimetableSig = (() => {
+      const items = getTimetableData();
+      return computeCurrentIdx(items) + '|' + items.map(t => t.time).join(',');
+    })();
+    tickCountdown();
     setInterval(tickCountdown, 1000);
+    // 단계 변경 / 어드민 시간 수정 감지 폴링
+    setInterval(tickTimetable, 15000); // 15초마다 확인
     initReveal();
-    applyCustomTimetableTimes();
   });
 
   // expose for pages that need
