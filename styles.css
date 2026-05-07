@@ -699,6 +699,141 @@ main { margin-left: 248px; min-height: 100vh; position: relative; }
 }
 .cta-banner-btn:hover { background: var(--orange-deep); border-color: var(--orange-deep); transform: translateY(-1px); }
 
+/* 큰 CTA 버튼 (안내 페이지) */
+.cta-banner-btn-lg {
+  padding: 20px 32px;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  border-radius: 12px;
+  box-shadow: 4px 4px 0 var(--gold);
+}
+.cta-banner-btn-lg:hover {
+  box-shadow: 6px 6px 0 var(--gold);
+  transform: translate(-1px, -1px);
+}
+
+/* 심사 흐름 — 1차/2차 단계 */
+.process-stage { margin-bottom: 18px; }
+.process-stage:last-child { margin-bottom: 0; }
+.process-stage-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  font-weight: 700;
+  color: var(--orange);
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1.5px solid var(--orange);
+  display: inline-block;
+}
+.process-stage ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-left: 0;
+}
+.process-stage li {
+  position: relative;
+  padding-left: 18px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: rgba(14,14,14,0.85);
+}
+.process-stage li::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 9px;
+  width: 5px; height: 5px;
+  background: var(--orange);
+  border-radius: 50%;
+}
+
+/* 평가 기준 — stacked bar */
+.criteria-stack {
+  display: flex;
+  height: 70px;
+  border: 1.5px solid var(--ink);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.criteria-seg {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 6px;
+  text-align: center;
+  border-right: 1px solid rgba(255,255,255,0.2);
+  min-width: 0;
+}
+.criteria-seg:last-child { border-right: 0; }
+.criteria-seg .seg-pct {
+  font-family: 'Anton', sans-serif;
+  font-size: 24px;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+.criteria-seg .seg-name {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  margin-top: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+.criteria-seg.s1 { background: var(--orange); color: white; }
+.criteria-seg.s2 { background: var(--orange-deep); color: white; }
+.criteria-seg.s3 { background: var(--ink); color: white; }
+.criteria-seg.s4 { background: var(--gold); color: var(--ink); }
+
+/* 환영 주제 */
+.welcome-topics {
+  background: var(--gold-soft);
+  border-style: dashed;
+  border-color: var(--gold);
+}
+.welcome-topics h3 {
+  color: var(--ink);
+  font-family: 'Pretendard', sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  margin-bottom: 12px;
+}
+.welcome-intro {
+  font-size: 14.5px;
+  line-height: 1.65;
+  color: var(--ink);
+}
+.welcome-intro b { color: var(--orange-deep); }
+.welcome-list {
+  list-style: none;
+  padding-left: 0;
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.welcome-list li {
+  position: relative;
+  padding-left: 22px;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--ink);
+}
+.welcome-list li::before {
+  content: '🌱';
+  position: absolute;
+  left: 0;
+  font-size: 14px;
+}
+
 .judging-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -970,14 +1105,80 @@ footer .dot { color: var(--orange); }
   border-radius: 999px;
   margin-left: auto;
 }
-.award-1 .project-card {
-  border-color: var(--orange);
-  background: linear-gradient(135deg, var(--orange-pale), var(--paper));
+/* 1위 — 압도적 임팩트 (gold gradient + 큰 메달 + 트로피 워터마크) */
+.award-1 { display: block; margin-bottom: 40px; }
+.award-1 .award-tier-head { font-size: 40px; }
+.award-1 .award-tier-medal {
+  font-size: 56px;
+  filter: drop-shadow(0 3px 0 rgba(0,0,0,0.12));
 }
-.award-1 { display: block; }
-.award-1 .project-card { padding: 32px; }
-.award-1 .pc-title { font-size: 36px; }
-.award-2 .project-grid, .award-3 .project-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+.award-1 .project-card {
+  border: 3px solid var(--gold);
+  background:
+    radial-gradient(circle at top right, rgba(255,214,0,0.18) 0%, transparent 60%),
+    linear-gradient(135deg, var(--gold-soft) 0%, #FFFAE5 50%, var(--paper) 100%);
+  box-shadow: 8px 8px 0 var(--ink);
+  padding: 40px 36px;
+  position: relative;
+  overflow: hidden;
+}
+.award-1 .project-card::before {
+  content: '🏆';
+  position: absolute;
+  top: -20px; right: -16px;
+  font-size: 160px;
+  opacity: 0.08;
+  transform: rotate(12deg);
+  pointer-events: none;
+}
+.award-1 .project-card:hover {
+  border-color: var(--gold);
+  box-shadow: 12px 12px 0 var(--ink);
+  transform: translate(-3px, -3px);
+}
+.award-1 .pc-title {
+  font-size: clamp(32px, 4vw, 48px);
+  line-height: 1.05;
+  position: relative;
+}
+.award-1 .pc-tagline { font-size: 16px; line-height: 1.55; }
+.award-1 .pc-badge.gold {
+  background: var(--gold);
+  color: var(--ink);
+  font-size: 13px;
+  padding: 8px 14px;
+  box-shadow: 2px 2px 0 var(--ink);
+}
+
+/* 2위 — silver */
+.award-2 .award-tier-medal { font-size: 40px; }
+.award-2 .project-card {
+  border: 2.5px solid #B8B8B8;
+  background: linear-gradient(135deg, #F5F5F5 0%, var(--paper) 100%);
+  box-shadow: 5px 5px 0 var(--ink);
+}
+.award-2 .project-card:hover {
+  border-color: #888;
+  box-shadow: 7px 7px 0 var(--ink);
+}
+
+/* 3위 — bronze */
+.award-3 .award-tier-medal { font-size: 32px; }
+.award-3 .project-card {
+  border: 2px solid #CD7F32;
+  background: linear-gradient(135deg, rgba(205,127,50,0.10) 0%, var(--paper) 100%);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+.award-3 .project-card:hover {
+  border-color: #A0651A;
+  box-shadow: 6px 6px 0 var(--ink);
+}
+
+.award-2 .project-grid, .award-3 .project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
 
 .passed-list {
   display: flex; flex-wrap: wrap; gap: 8px;

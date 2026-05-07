@@ -48,14 +48,7 @@
           <div class="info-icon">🚻</div>
           <h3 class="info-title">화장실</h3>
           <div class="info-meta">
-            POSITION  <span class="info-key" id="cfgToiletView">20F · 엘베 옆</span>
-          </div>
-        </div>
-        <div class="info-card" style="transform:none;">
-          <div class="info-icon">🍕</div>
-          <h3 class="info-title">케이터링</h3>
-          <div class="info-meta">
-            HOURS  <span class="info-key" id="cfgFoodView">19:00 ~ 23:00</span>
+            POSITION  <span class="info-key" id="cfgToiletView">입구 LED 옆</span>
           </div>
         </div>
         <div class="info-card" style="transform:none;">
@@ -84,7 +77,7 @@
           <div class="cta-banner-title">레플릿 사용법이 처음이라면?</div>
           <div class="cta-banner-sub">Replit Docs 한국어 페이지에서 기초부터 차근차근 익혀보세요.</div>
         </div>
-        <a class="cta-banner-btn" href="https://replit-docs-kr.vercel.app/getting-started/intro-replit" target="_blank" rel="noopener">
+        <a class="cta-banner-btn cta-banner-btn-lg" href="https://replit-docs-kr.replit.app" target="_blank" rel="noopener">
           📘 레플릿 사용법 안내 ↗
         </a>
       </div>
@@ -106,18 +99,24 @@
         </div>
         <div class="judging-block">
           <h3>심사 흐름</h3>
-          <ul class="process-list" id="processList"></ul>
+          <div class="process-list" id="processList"></div>
         </div>
       </div>
 
       <div class="judging-block" style="margin-top:16px;">
         <h3>평가 기준</h3>
-        <div class="criteria-list" id="criteriaList"></div>
+        <div id="criteriaList"></div>
       </div>
 
-      <div class="presentation-note">
-        <span class="label">발표</span>
-        <span id="presentationNote">팀당 발표 5분 + Q&amp;A 2분</span>
+      <div class="judging-block welcome-topics" style="margin-top:16px;">
+        <h3>🌱 이번 해커톤에서 환영하는 주제</h3>
+        <p class="welcome-intro">이번 Replit 해커톤은 <b>"사내에서 반복적으로 쓰는 업무 도구, 실질적으로 쓰이는 서비스"</b>에 가치를 두고 있어요.</p>
+        <p class="welcome-intro" style="margin-top:8px;">예를 들면 이런 것들이에요.</p>
+        <ul class="welcome-list">
+          <li>반복 업무를 줄여주는 자동화 도구</li>
+          <li>자료 정리, 검색, 보고를 빠르게 해주는 도구</li>
+          <li>회의 준비나 의사결정을 돕는 도구</li>
+        </ul>
       </div>
     </section>
 
@@ -139,7 +138,6 @@
   document.getElementById('cfgSsidView').textContent = cfg.ssid || c.wifi.ssid;
   document.getElementById('cfgWifiPwView').textContent = cfg.wifiPw || c.wifi.pw;
   document.getElementById('cfgToiletView').textContent = cfg.toilet || c.toiletLocation;
-  document.getElementById('cfgFoodView').textContent = cfg.food || c.foodHours;
   document.getElementById('cfgPhoneView').textContent = cfg.phone || c.sosPhone;
 
   function escape(s) {
@@ -164,20 +162,27 @@
     <li><b>${escape(j.name)}</b><span>${escape(j.role)}</span></li>
   `).join('');
 
-  // 심사 흐름
-  document.getElementById('processList').innerHTML = RC_DATA.judging.process.map(p => `<li>${escape(p)}</li>`).join('');
-
-  // 평가 기준
-  document.getElementById('criteriaList').innerHTML = RC_DATA.judging.criteria.map(cr => `
-    <div class="criteria-row">
-      <div class="criteria-name">${escape(cr.name)}</div>
-      <div class="criteria-bar-wrap"><div class="criteria-bar" style="width:${cr.weight}%"></div></div>
-      <div class="criteria-pct">${cr.weight}%</div>
+  // 심사 흐름 (1차/2차 단계별 bullet)
+  document.getElementById('processList').innerHTML = RC_DATA.judging.process.map(p => `
+    <div class="process-stage">
+      <div class="process-stage-title">${escape(p.title)}</div>
+      <ul>
+        ${p.items.map(it => `<li>${escape(it)}</li>`).join('')}
+      </ul>
     </div>
   `).join('');
 
-  // 발표 방식
-  document.getElementById('presentationNote').textContent = RC_DATA.judging.presentation;
+  // 평가 기준 (stacked bar 1개 — 비율 표기)
+  document.getElementById('criteriaList').innerHTML = `
+    <div class="criteria-stack">
+      ${RC_DATA.judging.criteria.map((cr, i) => `
+        <div class="criteria-seg s${i + 1}" style="flex:${cr.weight}">
+          <span class="seg-pct">${cr.weight}%</span>
+          <span class="seg-name">${escape(cr.name)}</span>
+        </div>
+      `).join('')}
+    </div>
+  `;
 })();
 </script>
 

@@ -9,8 +9,7 @@ window.RC_DATA = {
     sosPhone: '010-0000-0000',
     wifi: { ssid: 'HASHED-GUEST', pw: 'replclub2026' },
     awards: { gold: 1, silver: 1, bronze: 3, passed: 6 },
-    toiletLocation: '20F · 엘리베이터 옆',
-    foodHours: '19:00 ~ 23:00',
+    toiletLocation: '입구 LED 옆',
   },
 
   timetable: [
@@ -64,8 +63,22 @@ window.RC_DATA = {
       { name: '마켓핏랩', role: 'Replit 한국 공식 파트너' },
     ],
     process: [
-      '1차 — 통과 6팀 선정',
-      '2차 — 통과 6팀 안에서 1·2·3위 선정',
+      {
+        title: '1차 심사',
+        items: [
+          '빌드 시작 약 1시간 경, 심사위원이 각 팀의 프로젝트를 검토하여 기획 내용과 구현 완성도를 확인',
+          '2차 발표 심사 진출할 5팀 선정',
+          '프로젝트 등록 시 "5문답"을 또렷하게 작성하시는 게 유리해요.',
+        ],
+      },
+      {
+        title: '2차 심사',
+        items: [
+          '1차 심사에서 선발된 5팀 발표 (3분 발표 + 1분 질의)',
+          '최종 1~3위 (각 1팀), 특별상 (6팀) 선정',
+          '발표 시간이 짧기 때문에 "누가 왜 쓰는가 + 오늘 진짜 동작하는 부분"을 보여주는 게 핵심이에요.',
+        ],
+      },
     ],
     criteria: [
       { name: '비즈니스 임팩트', weight: 40 },
@@ -73,7 +86,6 @@ window.RC_DATA = {
       { name: '창의성', weight: 20 },
       { name: '발표력', weight: 10 },
     ],
-    presentation: '발표 방식·시간 추후 안내',
   },
 
   // 시상 단계 공개 상태 (어드민 단계별 공개 시뮬레이션)
@@ -266,24 +278,24 @@ window.RC_DATA = {
     },
   ],
 
-  // 사전 참석자 명단 (LUMA CSV에서 import한 mock)
+  // 사전 참석자 명단 (LUMA CSV에서 import한 mock — 매칭 키: 전화번호)
   attendees: [
-    { name: '수아',  email: 'sua@~',       source: '공개모집', approved: true,  team: 'LATTE' },
-    { name: '민지',  email: 'minji@~',     source: '공개모집', approved: true,  team: 'LATTE' },
-    { name: '일렌',  email: 'ellen@~',     source: '초대용',   approved: true,  team: 'BUILDLAB' },
-    { name: '미쉘',  email: 'michelle@~',  source: '초대용',   approved: true,  team: null },
-    { name: '필',    email: 'feel@~',      source: '공개모집', approved: true,  team: 'DECAF' },
-    { name: 'Sky',  email: 'sky@~',       source: '공개모집', approved: true,  team: 'PRISM' },
-    { name: '재훈',  email: 'jh@~',        source: '공개모집', approved: true,  team: 'PRISM' },
-    { name: '지나',  email: 'jina@~',      source: '초대용',   approved: true,  team: 'BRIM' },
-    { name: '해리',  email: 'harry@~',     source: '공개모집', approved: true,  team: 'LOOPER' },
-    { name: '진',    email: 'jin@~',       source: '공개모집', approved: true,  team: 'LOOPER' },
-    { name: '보리',  email: 'bori@~',      source: '초대용',   approved: true,  team: 'SHIBA' },
-    { name: '도윤',  email: 'doyun@~',     source: '공개모집', approved: true,  team: 'NOTEBOX' },
-    { name: '서아',  email: 'seoa@~',      source: '공개모집', approved: true,  team: 'NOTEBOX' },
-    { name: '영수',  email: 'ys@~',        source: '공개모집', approved: false, team: null },
-    { name: '재이',  email: 'jaei@~',      source: '초대용',   approved: true,  team: null },
-    { name: '하늘',  email: 'haneul@~',    source: '공개모집', approved: true,  team: null },
-    { name: '준호',  email: 'junho@~',     source: '초대용',   approved: false, team: null },
+    { name: '수아',  phone: '010-1234-0001', source: '공개모집', approved: true,  team: 'LATTE' },
+    { name: '민지',  phone: '010-1234-0002', source: '공개모집', approved: true,  team: 'LATTE' },
+    { name: '일렌',  phone: '010-1234-0003', source: '초대용',   approved: true,  team: 'BUILDLAB' },
+    { name: '미쉘',  phone: '010-1234-0004', source: '초대용',   approved: true,  team: null },
+    { name: '필',    phone: '010-1234-0005', source: '공개모집', approved: true,  team: 'DECAF' },
+    { name: 'Sky',   phone: '010-1234-0006', source: '공개모집', approved: true,  team: 'PRISM' },
+    { name: '재훈',  phone: '010-1234-0007', source: '공개모집', approved: true,  team: 'PRISM' },
+    { name: '지나',  phone: '010-1234-0008', source: '초대용',   approved: true,  team: 'BRIM' },
+    { name: '해리',  phone: '010-1234-0009', source: '공개모집', approved: true,  team: 'LOOPER' },
+    { name: '진',    phone: '010-1234-0010', source: '공개모집', approved: true,  team: 'LOOPER' },
+    { name: '보리',  phone: '010-1234-0011', source: '초대용',   approved: true,  team: 'SHIBA' },
+    { name: '도윤',  phone: '010-1234-0012', source: '공개모집', approved: true,  team: 'NOTEBOX' },
+    { name: '서아',  phone: '010-1234-0013', source: '공개모집', approved: true,  team: 'NOTEBOX' },
+    { name: '영수',  phone: '010-1234-0014', source: '공개모집', approved: false, team: null },
+    { name: '재이',  phone: '010-1234-0015', source: '초대용',   approved: true,  team: null },
+    { name: '하늘',  phone: '010-1234-0016', source: '공개모집', approved: true,  team: null },
+    { name: '준호',  phone: '010-1234-0017', source: '초대용',   approved: false, team: null },
   ],
 };

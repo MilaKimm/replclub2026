@@ -18,9 +18,9 @@
       </ul>
       <div class="qr">
         <div class="qr-img">
-          <img src="https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=0&data=https%3A%2F%2Freplclub2026.vercel.app" alt="QR">
+          <img src="assets/qr.png" alt="QR">
         </div>
-        <a href="https://replclub2026.vercel.app" class="qr-link">replclub2026.vercel.app</a>
+        <a href="https://replclub-2026.replit.app/" class="qr-link">replclub-2026.replit.app/</a>
       </div>
     </aside>
   `;

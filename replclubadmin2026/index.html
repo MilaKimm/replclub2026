@@ -54,7 +54,7 @@
       </div>
 
       <div class="admin-toolbar">
-        <input type="text" id="atSearch" placeholder="이름·이메일·팀명 검색">
+        <input type="text" id="atSearch" placeholder="이름·전화번호·팀명 검색">
         <select id="atFilter">
           <option value="all">전체</option>
           <option value="approved">승인됨</option>
@@ -74,7 +74,7 @@
           <tr>
             <th>상태</th>
             <th>이름</th>
-            <th>이메일</th>
+            <th>전화번호</th>
             <th>출처</th>
             <th>승인</th>
             <th>제출 팀</th>
@@ -185,28 +185,14 @@
       </div>
 
       <div class="admin-section">
-        <h2>📢 공지 배너</h2>
-        <div style="background:white; border:1px solid #ddd; border-radius:8px; padding:16px;">
-          <input id="noticeText" class="input" placeholder="예: 21:45 제출 마감! 5분 전입니다 ⏰" style="margin-bottom:10px;">
-          <div style="display:flex; gap:8px;">
-            <button class="admin-btn primary" id="noticeOn">배너 ON</button>
-            <button class="admin-btn" id="noticeOff">배너 OFF</button>
-            <span style="margin-left:auto; align-self:center; font-size:12px; color:#666;" id="noticeStatus">현재: OFF</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="admin-section">
-        <h2>🛟 현장 안내 (Wi-Fi · 화장실 · 케이터링)</h2>
+        <h2>🛟 현장 안내 (Wi-Fi · 화장실 · SOS)</h2>
         <div style="background:white; border:1px solid #ddd; border-radius:8px; padding:16px; display:grid; grid-template-columns:140px 1fr; gap:10px; align-items:center;">
           <label>Wi-Fi SSID</label>
           <input class="input" id="cfgSsid" value="HASHED-GUEST">
           <label>Wi-Fi 비밀번호</label>
           <input class="input" id="cfgWifiPw" value="replclub2026">
           <label>화장실 위치</label>
-          <input class="input" id="cfgToilet" value="20F · ELEV. SIDE">
-          <label>케이터링 시간</label>
-          <input class="input" id="cfgFood" value="19:00 ~ 23:00">
+          <input class="input" id="cfgToilet" value="입구 LED 옆">
           <label>운영팀 연락처</label>
           <input class="input" id="cfgPhone" value="010-0000-0000">
           <div></div>
@@ -266,9 +252,13 @@
     const stored = load(STORE.attendees, null);
     const attendees = stored ? stored.map(a => ({ ...a })) : RC_DATA.attendees.map(a => ({ ...a }));
     const projects = getProjects();
-    // 프로젝트에 등록된 팀원 이름 → 매칭
+    // 프로젝트 팀원 전화번호와 매칭 (정규화: 공백/하이픈 제거)
+    const normalize = (s) => String(s || '').replace(/[\s-]/g, '');
     attendees.forEach(a => {
-      const found = projects.find(p => (p.members || []).includes(a.name));
+      const phone = normalize(a.phone);
+      const found = phone ? projects.find(p =>
+        (p._privateMembers || []).some(m => normalize(m.phone) === phone)
+      ) : null;
       a.team = found ? found.team : null;
     });
     return attendees;
@@ -278,22 +268,22 @@
     return !!localStorage.getItem(STORE.attendees);
   }
 
-  // CSV 파싱 (단순 양식: name,email,source,approved)
+  // CSV 파싱 (단순 양식: name,phone,source,approved)
   function parseAttendeesCSV(text) {
     const lines = text.split(/\r?\n/).filter(l => l.trim());
     if (lines.length < 2) return null;
     const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
     const nameIdx = headers.indexOf('name');
-    const emailIdx = headers.indexOf('email');
+    const phoneIdx = headers.indexOf('phone');
     const sourceIdx = headers.indexOf('source');
     const approvedIdx = headers.indexOf('approved');
-    if (nameIdx < 0 || emailIdx < 0) return null;
+    if (nameIdx < 0 || phoneIdx < 0) return null;
     return lines.slice(1).map(line => {
       const cols = line.split(',').map(c => c.trim());
       const ap = (cols[approvedIdx] || '').toUpperCase();
       return {
         name: cols[nameIdx] || '',
-        email: cols[emailIdx] || '',
+        phone: cols[phoneIdx] || '',
         source: cols[sourceIdx] || '',
         approved: ['TRUE', '1', 'Y', 'YES', 'O', '승인'].includes(ap),
         team: null,
@@ -327,11 +317,11 @@
 
   // 샘플 양식 다운로드
   document.getElementById('atSampleBtn').addEventListener('click', () => {
-    const sample = 'name,email,source,approved\n' +
-      '김수아,sua@example.com,공개모집,TRUE\n' +
-      '이일렌,ellen@example.com,초대용,TRUE\n' +
-      '박미쉘,michelle@example.com,공개모집,TRUE\n' +
-      '최영수,ys@example.com,공개모집,FALSE\n';
+    const sample = 'name,phone,source,approved\n' +
+      '김수아,010-1234-5678,공개모집,TRUE\n' +
+      '이일렌,010-2345-6789,초대용,TRUE\n' +
+      '박미쉘,010-3456-7890,공개모집,TRUE\n' +
+      '최영수,010-4567-8901,공개모집,FALSE\n';
     const blob = new Blob(['﻿' + sample], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -356,9 +346,10 @@
     const filter = document.getElementById('atFilter').value;
     let list = all;
     if (search) {
+      const sNum = search.replace(/[\s-]/g, '');
       list = list.filter(a =>
         (a.name||'').toLowerCase().includes(search) ||
-        (a.email||'').toLowerCase().includes(search) ||
+        ((a.phone||'').replace(/[\s-]/g, '')).includes(sNum) ||
         (a.team||'').toLowerCase().includes(search)
       );
     }
@@ -376,7 +367,7 @@
       return `<tr>
         <td><span class="dot-status ${statusDot}"></span>${statusText}</td>
         <td>${escape(a.name)}</td>
-        <td>${escape(a.email)}</td>
+        <td style="font-family:'JetBrains Mono', monospace; font-size:12.5px;">${escape(a.phone || '')}</td>
         <td>${escape(a.source)}</td>
         <td>${a.approved ? '✅' : '⏳'}</td>
         <td>${a.team ? `<b>${escape(a.team)}</b>` : '<span style="color:#bbb;">—</span>'}</td>
@@ -681,29 +672,12 @@
     });
   }
 
-  // 공지 배너
-  function renderNotice() {
-    const n = load(STORE.notice, null);
-    document.getElementById('noticeText').value = (n && n.text) || '';
-    document.getElementById('noticeStatus').innerHTML = `현재: <b style="color:${n && n.on ? 'var(--orange)' : '#999'};">${n && n.on ? 'ON' : 'OFF'}</b>`;
-  }
-  document.getElementById('noticeOn').addEventListener('click', () => {
-    save(STORE.notice, { text: document.getElementById('noticeText').value, on: true });
-    renderNotice();
-  });
-  document.getElementById('noticeOff').addEventListener('click', () => {
-    const n = load(STORE.notice, {});
-    save(STORE.notice, { ...n, on: false });
-    renderNotice();
-  });
-
   // 현장 안내 저장
   document.getElementById('cfgSave').addEventListener('click', () => {
     save(STORE.config, {
       ssid: document.getElementById('cfgSsid').value,
       wifiPw: document.getElementById('cfgWifiPw').value,
       toilet: document.getElementById('cfgToilet').value,
-      food: document.getElementById('cfgFood').value,
       phone: document.getElementById('cfgPhone').value,
     });
     alert('현장 안내 저장됨 (사용자 페이지에 반영하려면 페이지 새로고침)');
@@ -714,7 +688,6 @@
     document.getElementById('cfgSsid').value = c.ssid || '';
     document.getElementById('cfgWifiPw').value = c.wifiPw || '';
     document.getElementById('cfgToilet').value = c.toilet || '';
-    document.getElementById('cfgFood').value = c.food || '';
     document.getElementById('cfgPhone').value = c.phone || '';
   }
 
@@ -724,7 +697,6 @@
   refreshPhase();
   renderQA();
   renderTimetable();
-  renderNotice();
   loadCfg();
 
   // 자동 갱신 (다른 어드민/사용자 변경 반영)
