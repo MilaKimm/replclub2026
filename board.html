@@ -151,18 +151,8 @@
   const AWARD_KEY = 'rc_award_phase';
   const COMMENTS_KEY = 'rc_comments_2026';
 
-  // 데모 시상 시나리오 — 처음 방문 시 한 번만 시상자 지정
-  // 1차 통과 5팀(p001~p005, 그 중 1·2·3위 각 1팀) + 특별상 3팀 (demo는 3개만)
-  const DEMO_AWARDS = {
-    'p001': 'gold',
-    'p002': 'silver',
-    'p003': 'bronze',
-    'p004': 'passed',
-    'p005': 'passed',
-    'p006': 'special',
-    'p007': 'special',
-    'p008': 'special',
-  };
+  // 시상 매핑은 어드민에서 개별 프로젝트마다 직접 지정
+  const DEMO_AWARDS = {};
 
   function loadProjects() {
     const saved = localStorage.getItem(STORE_KEY);
@@ -180,20 +170,7 @@
   function loadComments() {
     const saved = localStorage.getItem(COMMENTS_KEY);
     if (saved) { try { return JSON.parse(saved); } catch(e) {} }
-    // 초기 mock 댓글
-    const init = {
-      'p001': [
-        { name: '일렌', body: '와 진짜 카페 사장님이 쓸 것 같은데? 데모 어디서 보여요?', time: '20:30' },
-        { name: '미쉘', body: 'UI 깔끔해요 👍', time: '20:42' },
-        { name: '지나', body: '가격 모델 어떻게 가져갈 건지 궁금', time: '21:05' },
-      ],
-      'p003': [
-        { name: '수아', body: '회고 정말 매일 안 하게 되는데 이거 쓸것 같아요', time: '20:10' },
-        { name: '재훈', body: '음성 인식 정확도 어때요?', time: '20:25' },
-      ],
-    };
-    localStorage.setItem(COMMENTS_KEY, JSON.stringify(init));
-    return init;
+    return {};
   }
   function saveComments(c) { localStorage.setItem(COMMENTS_KEY, JSON.stringify(c)); }
 
