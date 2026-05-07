@@ -109,6 +109,69 @@
     ));
   }
 
+  // ============ 발표자료 전체화면 모달 ============
+  const PRESENTATION_MODAL_HTML = `
+    <div class="presentation-modal" id="presentationModal" role="dialog" aria-modal="true">
+      <div class="presentation-bar">
+        <div class="presentation-title" id="presentationTitle">📄 발표자료</div>
+        <div class="presentation-actions">
+          <a class="presentation-btn" id="presentationOpenNew" href="#" target="_blank" rel="noopener">↗ 새 탭으로 열기</a>
+          <button class="presentation-btn close" id="presentationClose" type="button">✕ 닫기 (ESC)</button>
+        </div>
+      </div>
+      <iframe class="presentation-frame" id="presentationFrame" src="" title="발표자료" allow="fullscreen" allowfullscreen></iframe>
+    </div>
+  `;
+
+  function injectPresentationModal() {
+    if (document.getElementById('presentationModal')) return;
+    const wrap = document.createElement('div');
+    wrap.innerHTML = PRESENTATION_MODAL_HTML;
+    document.body.appendChild(wrap.firstElementChild);
+  }
+
+  function openPresentation(url, title) {
+    injectPresentationModal();
+    const modal = document.getElementById('presentationModal');
+    const frame = document.getElementById('presentationFrame');
+    const titleEl = document.getElementById('presentationTitle');
+    const openNew = document.getElementById('presentationOpenNew');
+    if (!modal || !frame) return;
+    frame.src = url;
+    titleEl.textContent = '📄 ' + (title || '발표자료');
+    if (openNew) openNew.href = url;
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closePresentation() {
+    const modal = document.getElementById('presentationModal');
+    const frame = document.getElementById('presentationFrame');
+    if (modal) modal.classList.remove('open');
+    if (frame) frame.src = ''; // 리소스 해제
+    document.body.style.overflow = '';
+  }
+
+  // 클릭 위임 — 동적으로 그려진 .tl-link[data-presentation]에도 작동
+  document.addEventListener('click', (e) => {
+    const link = e.target.closest('.tl-link[data-presentation]');
+    if (link) {
+      e.preventDefault();
+      openPresentation(link.getAttribute('href'), link.dataset.presentationTitle || '');
+      return;
+    }
+    if (e.target.closest('#presentationClose')) {
+      closePresentation();
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      const modal = document.getElementById('presentationModal');
+      if (modal && modal.classList.contains('open')) closePresentation();
+    }
+  });
+
   // 어드민이 저장한 타임테이블 시간 가져오기 (없으면 data.js의 기본값 사용)
   function getTimetableData() {
     const base = (window.RC_DATA && window.RC_DATA.timetable) || [];
@@ -151,7 +214,7 @@
       const isNow = i === currentIdx;
       const isNext = i === currentIdx + 1;
       const linkHtml = t.link
-        ? ` <a class="tl-link" href="${escapeHtml(t.link)}" target="_blank" rel="noopener">📄 발표자료 ↗</a>`
+        ? ` <a class="tl-link" href="${escapeHtml(t.link)}" data-presentation data-presentation-title="${escapeHtml(t.label)}" target="_blank" rel="noopener">📄 발표자료 ↗</a>`
         : '';
 
       if (isNow) {
