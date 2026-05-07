@@ -27,20 +27,53 @@
     <div class="section-head">
       <div>
         <div class="eyebrow"><span class="pip"></span> REPL BOARD</div>
-        <h2>오늘 만든 프로젝트</h2>
+        <h2>REPL TIME!</h2>
       </div>
-      <button class="btn btn-primary" id="newProjectBtn">+ 프로젝트 등록</button>
+      <button class="btn btn-primary btn-register" id="newProjectBtn">＋ 프로젝트 등록</button>
     </div>
 
-    <div class="board-toolbar">
-      <div class="board-toolbar-info">
-        <div class="board-toolbar-title">등록 마감 21:45</div>
-        <div class="board-toolbar-meta">1팀 1프로젝트 · 등록 시 비밀번호 설정 · 수정/삭제 시 비밀번호 입력</div>
+    <div class="prize-box">
+      <div class="prize-box-head">🏆 상금</div>
+      <div class="prize-list">
+        <div class="prize-row">
+          <span class="prize-medal">🥇</span>
+          <div class="prize-info">
+            <span class="prize-rank">1등</span>
+            <span class="prize-amount">$3,000 Replit 크레딧</span>
+          </div>
+          <span class="prize-meta">1명</span>
+        </div>
+        <div class="prize-row">
+          <span class="prize-medal">🥈</span>
+          <div class="prize-info">
+            <span class="prize-rank">2등</span>
+            <span class="prize-amount">$2,000 Replit 크레딧</span>
+          </div>
+          <span class="prize-meta">1명</span>
+        </div>
+        <div class="prize-row">
+          <span class="prize-medal">🥉</span>
+          <div class="prize-info">
+            <span class="prize-rank">3등</span>
+            <span class="prize-amount">$1,000 Replit 크레딧</span>
+          </div>
+          <span class="prize-meta">1명</span>
+        </div>
+        <div class="prize-row">
+          <span class="prize-medal">⭐</span>
+          <div class="prize-info">
+            <span class="prize-rank">특별상</span>
+            <span class="prize-amount">Replit Core 6개월 구독</span>
+          </div>
+          <span class="prize-meta">6명</span>
+        </div>
       </div>
-      <div class="board-toolbar-meta">
-        총 <b id="projectCount" style="color:var(--orange); font-size:14px;">-</b>팀 등록 ·
-        제출까지 <b id="boardCountdown" style="color:var(--orange);">-</b>
-      </div>
+    </div>
+
+    <div class="board-meta-row">
+      <span>총 <b id="projectCount">-</b>팀 등록</span>
+      <span style="opacity:0.4">·</span>
+      <span>제출까지 <b id="boardCountdown">-</b></span>
     </div>
 
     <!-- 시상 영역 (어드민이 단계별 공개 시 노출) -->
@@ -51,7 +84,7 @@
       <div class="section-head">
         <div>
           <div class="eyebrow"><span class="pip"></span> ALL PROJECTS</div>
-          <h2 style="font-size:42px;">전체 프로젝트</h2>
+          <h2 style="font-size:42px;">전체 프로젝트 모아보기</h2>
         </div>
         <span class="section-tag">최신 등록 순</span>
       </div>
@@ -104,8 +137,8 @@
       </div>
 
       <div class="field">
-        <label class="field-label">프로젝트 URL</label>
-        <input class="input" name="url" type="url" placeholder="https://" required>
+        <label class="field-label">프로젝트 URL <span style="color:var(--gray); font-weight:500;">(선택)</span></label>
+        <input class="input" name="url" type="url" placeholder="https://  · 등록 시 비워두고 나중에 추가해도 됩니다">
       </div>
 
       <div class="field">
@@ -304,7 +337,15 @@
   function render() {
     const projects = loadProjects();
     const phase = getPhase();
-    const sorted = [...projects].sort((a,b) => (b.registeredAt || '').localeCompare(a.registeredAt || ''));
+    // 신규 등록(id가 'p' + timestamp 형식) → 항상 mock보다 위
+    // 같은 그룹끼리는 registeredAt 시간 역순
+    const sorted = [...projects].sort((a, b) => {
+      const aNew = (a.id || '').length > 5;
+      const bNew = (b.id || '').length > 5;
+      if (aNew !== bNew) return aNew ? -1 : 1;
+      if (aNew) return (b.id || '').localeCompare(a.id || '');
+      return (b.registeredAt || '').localeCompare(a.registeredAt || '');
+    });
 
     document.getElementById('projectCount').textContent = projects.length;
     document.getElementById('projectGrid').innerHTML = sorted.map(p => projectCard(p, phase)).join('');
@@ -343,23 +384,24 @@
     const d = p.details || {};
     const phase = getPhase();
     const badge = getBadge(p.award, phase);
+    const canEdit = !!p._password; // 본인이 등록한 프로젝트만 수정/삭제 가능
 
     const inner = document.getElementById('detailModalInner');
     inner.innerHTML = `
       <div class="modal-head">
         <div>
           ${badge ? `<div class="pc-badge ${badge.cls}" style="position:static; display:inline-block; margin-bottom:8px;">${badge.label}</div>` : ''}
-          <div class="modal-title" style="font-size:36px;">${escape(p.team)}</div>
+          <div class="modal-title" style="font-size:36px; word-break:keep-all;">${escape(p.team)}</div>
           <div class="modal-sub">${escape((p.members||[]).join(' · '))} · ${escape(p.registeredAt)}</div>
         </div>
         <button class="modal-close" data-close>✕</button>
       </div>
       <div class="modal-body">
-        <div style="background:var(--orange-pale); border:1px dashed var(--orange); padding:14px 18px; border-radius:10px; margin-bottom:20px; font-size:15px; line-height:1.5;">
+        <div style="background:var(--orange-pale); border:1px dashed var(--orange); padding:14px 18px; border-radius:10px; margin-bottom:20px; font-size:15px; line-height:1.5; white-space:pre-wrap;">
           <strong style="color:var(--orange-deep);">💡 한줄 소개</strong><br>
           ${escape(p.tagline)}
         </div>
-        ${p.url ? `<div style="margin-bottom:20px;"><a class="pc-link" href="${escape(p.url)}" target="_blank" rel="noopener">🔗 ${escape(p.url)}</a></div>` : ''}
+        ${p.url ? `<div style="margin-bottom:20px; word-break:break-all;"><a class="pc-link" href="${escape(p.url)}" target="_blank" rel="noopener">🔗 ${escape(p.url)}</a></div>` : ''}
 
         <div class="field-divider" data-label="ABOUT"></div>
 
@@ -372,7 +414,7 @@
         ].map(([q, a]) => a ? `
           <div style="margin-bottom:18px;">
             <div style="font-weight:700; font-size:14px; color:var(--orange-deep); margin-bottom:6px;">${q}</div>
-            <div style="font-size:14.5px; line-height:1.6; color:rgba(14,14,14,0.85);">${escape(a)}</div>
+            <div style="font-size:14.5px; line-height:1.6; color:rgba(14,14,14,0.85); white-space:pre-wrap;">${escape(a)}</div>
           </div>
         ` : '').join('')}
 
@@ -382,7 +424,7 @@
           ${comments.length ? comments.map(c => `
             <div style="background:var(--paper-2); border-radius:10px; padding:12px 16px;">
               <div style="font-size:13px; font-weight:700; margin-bottom:4px;">${escape(c.name)} · <span style="font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--gray); font-weight:600;">${escape(c.time)}</span></div>
-              <div style="font-size:14px; line-height:1.5;">${escape(c.body)}</div>
+              <div style="font-size:14px; line-height:1.5; white-space:pre-wrap;">${escape(c.body)}</div>
             </div>
           `).join('') : '<div style="font-size:13px; color:var(--gray); font-style:italic;">아직 댓글이 없어요. 첫 댓글을 남겨주세요!</div>'}
         </div>
@@ -392,6 +434,15 @@
           <input class="input" id="commentBody" placeholder="응원 한마디">
           <button class="btn btn-primary" id="commentSubmit">등록</button>
         </div>
+      </div>
+      <div class="modal-foot">
+        ${canEdit ? `
+          <button class="btn btn-sm" data-edit-project="${p.id}">✏️ 수정</button>
+          <button class="btn btn-sm" data-delete-project="${p.id}" style="color:var(--red); border-color:var(--red);">🗑 삭제</button>
+        ` : `
+          <span style="font-size:12px; color:var(--gray);">※ 수정·삭제는 본인 등록 프로젝트만 가능합니다</span>
+        `}
+        <button class="btn" data-close style="margin-left:auto;">닫기</button>
       </div>
     `;
     document.getElementById('detailModal').classList.add('open');
@@ -409,6 +460,31 @@
       saveComments(all);
       openDetail(id); // 재렌더
     });
+
+    // 수정 / 삭제 (본인 프로젝트만)
+    if (canEdit) {
+      inner.querySelector('[data-edit-project]').addEventListener('click', () => {
+        const pw = prompt('수정용 비밀번호를 입력해주세요:');
+        if (pw === null) return;
+        if (pw !== p._password) {
+          alert('비밀번호가 일치하지 않습니다.\n분실 시 운영팀에 문의해주세요.');
+          return;
+        }
+        openEditForm(p);
+      });
+      inner.querySelector('[data-delete-project]').addEventListener('click', () => {
+        const pw = prompt('삭제하려면 비밀번호를 입력해주세요:');
+        if (pw === null) return;
+        if (pw !== p._password) {
+          alert('비밀번호가 일치하지 않습니다.\n분실 시 운영팀에 문의해주세요.');
+          return;
+        }
+        if (!confirm(`정말 "${p.team}" 프로젝트를 삭제할까요? 되돌릴 수 없습니다.`)) return;
+        saveProjects(loadProjects().filter(x => x.id !== p.id));
+        document.getElementById('detailModal').classList.remove('open');
+        render();
+      });
+    }
   }
 
   function bindCloseButtons() {
@@ -417,8 +493,44 @@
     });
   }
 
-  // ============ 등록 ============
+  // ============ 등록 / 수정 ============
+  let editingId = null;
+
+  function resetNewForm() {
+    editingId = null;
+    document.getElementById('newProjectForm').reset();
+    document.querySelector('#newProjectModal .modal-title').textContent = '프로젝트 등록';
+    document.querySelector('#newProjectModal .modal-sub').textContent = 'REGISTER NEW PROJECT';
+    document.getElementById('submitNewProject').textContent = '등록하기';
+  }
+
+  function openEditForm(p) {
+    editingId = p.id;
+    const form = document.getElementById('newProjectForm');
+    const pm = p._privateMembers || (p.members || []).map(name => ({ name, phone: '' }));
+    form.team.value = p.team || '';
+    form.member1Name.value = pm[0]?.name || '';
+    form.member1Phone.value = pm[0]?.phone || '';
+    form.member2Name.value = pm[1]?.name || '';
+    form.member2Phone.value = pm[1]?.phone || '';
+    form.password.value = p._password || '';
+    form.url.value = p.url || '';
+    form.tagline.value = p.tagline || '';
+    form.problem.value = p.details?.problem || '';
+    form.target.value = p.details?.target || '';
+    form.better.value = p.details?.better || '';
+    form.mvp.value = p.details?.mvp || '';
+    form.progress.value = p.details?.progress || '';
+
+    document.querySelector('#newProjectModal .modal-title').textContent = '프로젝트 수정';
+    document.querySelector('#newProjectModal .modal-sub').textContent = 'EDIT PROJECT';
+    document.getElementById('submitNewProject').textContent = '저장';
+    document.getElementById('detailModal').classList.remove('open');
+    document.getElementById('newProjectModal').classList.add('open');
+  }
+
   document.getElementById('newProjectBtn').addEventListener('click', () => {
+    resetNewForm();
     document.getElementById('newProjectModal').classList.add('open');
   });
   bindCloseButtons();
@@ -430,6 +542,38 @@
     const members = [{ name: fd.get('member1Name'), phone: fd.get('member1Phone') }];
     if (fd.get('member2Name')) members.push({ name: fd.get('member2Name'), phone: fd.get('member2Phone') });
     const now = new Date();
+    const projects = loadProjects();
+
+    if (editingId) {
+      // 수정 모드
+      const idx = projects.findIndex(p => p.id === editingId);
+      if (idx >= 0) {
+        projects[idx] = {
+          ...projects[idx],
+          team: fd.get('team'),
+          tagline: fd.get('tagline'),
+          members: members.map(m => m.name),
+          _privateMembers: members,
+          _password: fd.get('password'),
+          url: fd.get('url'),
+          details: {
+            problem: fd.get('problem'),
+            target: fd.get('target'),
+            better: fd.get('better'),
+            mvp: fd.get('mvp'),
+            progress: fd.get('progress'),
+          },
+        };
+        saveProjects(projects);
+        resetNewForm();
+        document.getElementById('newProjectModal').classList.remove('open');
+        render();
+        alert('수정 완료!');
+      }
+      return;
+    }
+
+    // 신규 등록
     const newP = {
       id: 'p' + Date.now(),
       team: fd.get('team'),
@@ -449,10 +593,9 @@
         progress: fd.get('progress'),
       },
     };
-    const projects = loadProjects();
     projects.push(newP);
     saveProjects(projects);
-    form.reset();
+    resetNewForm();
     document.getElementById('newProjectModal').classList.remove('open');
     render();
     alert('등록 완료! 보드 상단에서 확인하세요.');

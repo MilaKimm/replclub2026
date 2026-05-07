@@ -68,15 +68,26 @@
       </div>
     </section>
 
-    <!-- B. Replit 사용법 -->
+    <!-- B. REPL CLUB 참여 방법 -->
     <section class="info-section">
       <div class="section-head">
         <div>
-          <div class="eyebrow"><span class="pip"></span> REPLIT GUIDE</div>
-          <h2 style="font-size:42px;">🚀 Replit 사용법</h2>
+          <div class="eyebrow"><span class="pip"></span> HOW TO JOIN</div>
+          <h2 style="font-size:42px;">🚀 REPL CLUB 참여 방법</h2>
         </div>
       </div>
-      <div class="guide-grid" id="guideGrid"></div>
+      <div class="step-list" id="stepList"></div>
+
+      <div class="cta-banner">
+        <div class="cta-banner-text">
+          <div class="cta-banner-eyebrow">REPLIT 공식 한국어 가이드</div>
+          <div class="cta-banner-title">레플릿 사용법이 처음이라면?</div>
+          <div class="cta-banner-sub">Replit Docs 한국어 페이지에서 기초부터 차근차근 익혀보세요.</div>
+        </div>
+        <a class="cta-banner-btn" href="https://replit-docs-kr.vercel.app/getting-started/intro-replit" target="_blank" rel="noopener">
+          📘 레플릿 사용법 안내 ↗
+        </a>
+      </div>
     </section>
 
     <!-- C. 심사 운영안 -->
@@ -137,14 +148,16 @@
     return String(s ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[ch]);
   }
 
-  // Replit 가이드
-  const gg = document.getElementById('guideGrid');
-  gg.innerHTML = RC_DATA.replitGuide.map((g, i) => `
-    <div class="guide-card">
-      <div class="num">0${i + 1} / GUIDE</div>
-      <h3>${escape(g.title)}</h3>
-      <p>${escape(g.desc)}</p>
-      ${g.link ? `<a href="${escape(g.link)}" target="_blank" rel="noopener">${escape(g.linkLabel || g.link)}</a>` : ''}
+  // REPL CLUB 참여 방법 (5단계 stepper)
+  const sl = document.getElementById('stepList');
+  sl.innerHTML = RC_DATA.replitGuide.map((g, i) => `
+    <div class="step-item">
+      <div class="step-num">STEP<strong>${String(i + 1).padStart(2, '0')}</strong></div>
+      <div>
+        <div class="step-title">${escape(g.title)}</div>
+        <div class="step-desc">${escape(g.desc)}</div>
+        ${g.link ? `<a class="step-link" href="${escape(g.link)}" target="_blank" rel="noopener">${escape(g.linkLabel || g.link)}</a>` : ''}
+      </div>
     </div>
   `).join('');
 

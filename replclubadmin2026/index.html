@@ -224,6 +224,7 @@
     qa: 'rc_qa_2026',
     awardPhase: 'rc_award_phase',
     timetable: 'rc_timetable_step',
+    timetableTimes: 'rc_timetable_times',
     notice: 'rc_notice',
     config: 'rc_config',
   };
@@ -342,6 +343,7 @@
         </td>
         <td>
           <button class="admin-btn" data-edit="${p.id}">✏️ 수정</button>
+          <button class="admin-btn" data-resetpw="${p.id}">🔑 비번리셋</button>
           <button class="admin-btn danger" data-del="${p.id}">🗑</button>
         </td>
       </tr>`;
@@ -381,6 +383,22 @@
           save(STORE.projects, arr);
           renderProjects();
         }
+      });
+    });
+    // 비밀번호 리셋 (분실 시 운영팀 안내용)
+    tb.querySelectorAll('button[data-resetpw]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.resetpw;
+        const arr = getProjects();
+        const idx = arr.findIndex(p => p.id === id);
+        if (idx < 0) return;
+        const team = arr[idx].team;
+        const current = arr[idx]._password || '(미설정)';
+        const newPw = prompt(`"${team}" 팀 비밀번호 리셋\n현재 비밀번호: ${current}\n\n새 비밀번호 입력 (참가자에게 전달):`);
+        if (newPw === null || !newPw.trim()) return;
+        arr[idx]._password = newPw.trim();
+        save(STORE.projects, arr);
+        alert(`✅ 비밀번호 리셋 완료\n팀: ${team}\n새 비번: ${newPw.trim()}\n\n참가자에게 직접 전달해주세요.`);
       });
     });
   }
@@ -534,23 +552,44 @@
 
   function renderTimetable() {
     const current = load(STORE.timetable, 3); // index of current step (default 빌드 타임)
+    const times = load(STORE.timetableTimes, TIMETABLE.map(t => t.time));
     const wrap = document.getElementById('timetableControl');
     wrap.innerHTML = `<div style="background:white; border:1px solid #ddd; border-radius:8px; padding:16px;">
+      <div style="font-size:12.5px; color:#666; margin-bottom:12px;">시간을 직접 수정할 수 있어요. 저장 후 사용자 홈은 새로고침 시 반영됩니다.</div>
       ${TIMETABLE.map((t, i) => `
         <div class="timeline-control-row ${i < current ? 'done' : ''} ${i === current ? 'now' : ''}">
-          <span class="time">${t.time}</span>
+          <input type="text" data-time-idx="${i}" value="${escape(times[i] || t.time)}" style="width:80px; padding:4px 8px; font-family:'JetBrains Mono', monospace; font-weight:700; font-size:13px; border:1px solid #ccc; border-radius:4px;">
           <div>${i < current ? '✅' : (i === current ? '◉' : '')} ${escape(t.label)}</div>
           <button class="admin-btn ${i === current ? 'primary' : ''}" data-step="${i}">
             ${i < current ? '되돌리기' : (i === current ? '진행 중' : '시작')}
           </button>
         </div>
       `).join('')}
+      <div style="margin-top:14px; display:flex; gap:8px; align-items:center;">
+        <button class="admin-btn primary" id="saveTimes">⏰ 시간 저장</button>
+        <button class="admin-btn" id="resetTimes">기본값으로 되돌리기</button>
+        <span style="margin-left:auto; font-size:12px; color:#666;">사용자 홈은 새로고침 후 반영</span>
+      </div>
     </div>`;
+
     wrap.querySelectorAll('button[data-step]').forEach(btn => {
       btn.addEventListener('click', () => {
         save(STORE.timetable, parseInt(btn.dataset.step));
         renderTimetable();
       });
+    });
+
+    document.getElementById('saveTimes').addEventListener('click', () => {
+      const newTimes = Array.from(wrap.querySelectorAll('input[data-time-idx]'))
+        .map(i => i.value.trim());
+      save(STORE.timetableTimes, newTimes);
+      alert('✅ 타임테이블 시간 저장됨\n사용자 홈은 새로고침 후 반영됩니다.');
+    });
+
+    document.getElementById('resetTimes').addEventListener('click', () => {
+      if (!confirm('기본값(data.js 시간)으로 되돌릴까요?')) return;
+      localStorage.removeItem(STORE.timetableTimes);
+      renderTimetable();
     });
   }
 

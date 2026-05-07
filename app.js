@@ -7,7 +7,7 @@
         <img src="assets/logo.svg" alt="REPL CLUB" class="brand-logo">
       </a>
       <div class="clock-card">
-        <div class="clock-label">SEOUL · KST</div>
+        <div class="clock-label">현재시간</div>
         <div class="clock" id="clock">--<span class="colon">:</span>--<span class="colon">:</span>--</div>
       </div>
       <ul class="menu">
@@ -103,6 +103,19 @@
     });
   }
 
+  // 어드민이 저장한 타임테이블 시간 → .tl-time 텍스트에 적용
+  function applyCustomTimetableTimes() {
+    try {
+      const raw = localStorage.getItem('rc_timetable_times');
+      if (!raw) return;
+      const times = JSON.parse(raw);
+      if (!Array.isArray(times)) return;
+      document.querySelectorAll('.tl-item .tl-time').forEach((el, i) => {
+        if (times[i]) el.textContent = times[i];
+      });
+    } catch (e) {}
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     const active = document.body.dataset.page;
     injectSidebar(active);
@@ -112,6 +125,7 @@
     setInterval(tickCountdown, 1000);
     initAdminEntry();
     initReveal();
+    applyCustomTimetableTimes();
   });
 
   // expose for pages that need

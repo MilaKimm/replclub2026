@@ -26,28 +26,34 @@ window.RC_DATA = {
 
   replitGuide: [
     {
-      title: '계정 만들기',
-      desc: 'replit.com 에서 이메일로 가입. Google 계정 연동도 가능합니다. Pro 크레딧을 받으려면 LUMA 등록 시 사용한 이메일과 동일하게 가입해주세요.',
-      link: 'https://replit.com/signup',
-      linkLabel: '회원가입 →',
+      title: '레플릿 회원 가입',
+      desc: 'replit.com 에서 회원가입을 해주세요.\n홈 화면 우측 상단의 "Create Account" 버튼을 누르고, 이메일 또는 Google 계정으로 가입할 수 있습니다.',
+      link: 'https://replit.com/',
+      linkLabel: 'replit.com 바로가기 →',
     },
     {
-      title: '첫 프로젝트 만들기',
-      desc: '대시보드 우측 상단 "Create" → 자연어로 만들고 싶은 걸 설명하면 Replit Agent가 코드·DB·배포까지 한 번에. 4시간 빌드에 가장 추천하는 흐름.',
-      link: 'https://docs.replit.com/replit-app',
-      linkLabel: 'Agent 가이드 →',
+      title: '크레딧 신청',
+      desc: '레플클럽 구글폼에 본인 Replit 계정을 제출해주세요.\n행사 당일 본인 계정에 $100 상당의 Pro 구독이 지급됩니다.\n※ Luma 참가 승인 대상자에 한해 1인 1회 지급됩니다.',
+      link: 'https://forms.gle/uhAnQvrqn18ZSqRq9',
+      linkLabel: '구글폼 제출하기 →',
     },
     {
-      title: 'Pro 크레딧 활용',
-      desc: '행사 당일 본인 Replit 계정에 $100 상당 Pro 구독이 자동 지급됩니다. 빌드·배포·DB 호스팅 모두 크레딧으로 사용 가능.',
+      title: '빌드 시작!',
+      desc: '크레딧 지급이 확인되면 곧바로 프로젝트를 만들어보세요.\n대화창에서 만들고 싶은 아이디어를 설명하기만 하면, Replit이 코드·DB·배포까지 알아서 해줍니다.',
       link: null,
       linkLabel: null,
     },
     {
+      title: '프로젝트 등록',
+      desc: '좌측 사이드바 \'레플 보드\' 메뉴에서 본인 프로젝트를 등록해주세요.\n1인 또는 2인 팀으로 참가 가능하며, 레플 보드를 통해 1차 심사가 진행됩니다.',
+      link: 'https://replclub2026.vercel.app/board.html',
+      linkLabel: '레플 보드 →',
+    },
+    {
       title: '막힐 때 도움 받기',
-      desc: '운영팀 부스(20층 입구) 또는 질문 보드에 등록 → REPL CLUB 빌더가 답변. Replit 공식 문서도 풍부합니다.',
-      link: 'https://docs.replit.com',
-      linkLabel: '공식 문서 →',
+      desc: '궁금한 점이 생기면 좌측 사이드바 \'질문 보드\'에 남겨주세요.\n운영팀(REPL CLUB 빌더)이 단계별로 답변해드립니다.',
+      link: 'https://replclub2026.vercel.app/qa.html',
+      linkLabel: '질문 보드 →',
     },
   ],
 
