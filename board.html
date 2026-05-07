@@ -152,13 +152,16 @@
   const COMMENTS_KEY = 'rc_comments_2026';
 
   // 데모 시상 시나리오 — 처음 방문 시 한 번만 시상자 지정
+  // 1차 통과 5팀(p001~p005, 그 중 1·2·3위 각 1팀) + 특별상 3팀 (demo는 3개만)
   const DEMO_AWARDS = {
     'p001': 'gold',
     'p002': 'silver',
     'p003': 'bronze',
-    'p004': 'bronze',
-    'p005': 'bronze',
-    'p006': 'passed',
+    'p004': 'passed',
+    'p005': 'passed',
+    'p006': 'special',
+    'p007': 'special',
+    'p008': 'special',
   };
 
   function loadProjects() {
@@ -195,14 +198,16 @@
   function saveComments(c) { localStorage.setItem(COMMENTS_KEY, JSON.stringify(c)); }
 
   // 시상 뱃지 (phase에 따라 노출 여부 결정)
+  // phase 진행 순서: hidden → passed → special → bronze → silver → gold
   function getBadge(award, phase) {
     if (!award || phase === 'hidden') return null;
-    const order = ['hidden','passed','bronze','silver','gold'];
+    const order = ['hidden','passed','special','bronze','silver','gold'];
     const reveal = order.indexOf(phase);
     if (award === 'passed' && reveal >= 1) return { cls: 'passed', label: '★ 1차 통과' };
-    if (award === 'bronze' && reveal >= 2) return { cls: 'bronze', label: '🥉 3위' };
-    if (award === 'silver' && reveal >= 3) return { cls: 'silver', label: '🥈 2위' };
-    if (award === 'gold' && reveal >= 4) return { cls: 'gold', label: '🥇 1위' };
+    if (award === 'special' && reveal >= 2) return { cls: 'special', label: '⭐ 특별상' };
+    if (award === 'bronze' && reveal >= 3) return { cls: 'bronze', label: '🥉 3위' };
+    if (award === 'silver' && reveal >= 4) return { cls: 'silver', label: '🥈 2위' };
+    if (award === 'gold' && reveal >= 5) return { cls: 'gold', label: '🥇 1위' };
     // bronze/silver/gold 인데 아직 그 phase 도달 못한 경우 1차 통과 표시
     if (['bronze','silver','gold'].includes(award) && reveal >= 1) return { cls: 'passed', label: '★ 1차 통과' };
     return null;
@@ -232,7 +237,7 @@
 
   function renderAwards(projects, phase) {
     if (phase === 'hidden') return '';
-    const order = ['hidden','passed','bronze','silver','gold'];
+    const order = ['hidden','passed','special','bronze','silver','gold'];
     const reveal = order.indexOf(phase);
     let html = `<div class="section-head" style="margin-bottom:24px;">
       <div>
@@ -242,8 +247,8 @@
       <span class="section-tag">▸ 단계별 공개 중</span>
     </div>`;
 
-    // 1위 (gold만)
-    if (reveal >= 4) {
+    // 1위 (gold)
+    if (reveal >= 5) {
       const w = projects.find(p => p.award === 'gold');
       if (w) {
         html += `<div class="award-tier award-1">
@@ -255,8 +260,8 @@
         </div>`;
       }
     }
-    // 2위
-    if (reveal >= 3) {
+    // 2위 (silver)
+    if (reveal >= 4) {
       const w = projects.find(p => p.award === 'silver');
       if (w) {
         html += `<div class="award-tier award-2">
@@ -268,20 +273,33 @@
         </div>`;
       }
     }
-    // 3위 (3팀)
-    if (reveal >= 2) {
+    // 3위 (bronze, 1팀)
+    if (reveal >= 3) {
       const ws = projects.filter(p => p.award === 'bronze');
       if (ws.length) {
         html += `<div class="award-tier award-3">
           <div class="award-tier-head">
             <span class="award-tier-medal">🥉</span> 3위
+            <span class="award-tier-meta">${ws.length} TEAM${ws.length > 1 ? 'S' : ''}</span>
+          </div>
+          <div class="project-grid">${ws.map(p => projectCard(p, phase)).join('')}</div>
+        </div>`;
+      }
+    }
+    // 특별상 (6팀)
+    if (reveal >= 2) {
+      const ws = projects.filter(p => p.award === 'special');
+      if (ws.length) {
+        html += `<div class="award-tier award-special">
+          <div class="award-tier-head">
+            <span class="award-tier-medal">⭐</span> 특별상
             <span class="award-tier-meta">${ws.length} TEAMS</span>
           </div>
           <div class="project-grid">${ws.map(p => projectCard(p, phase)).join('')}</div>
         </div>`;
       }
     }
-    // 1차 통과 — passed 라벨만 가진 팀들 + 모든 시상권 팀
+    // 1차 통과 띠 — passed/bronze/silver/gold (특별상은 별개 그룹)
     if (reveal >= 1) {
       const passed = projects.filter(p => ['passed','bronze','silver','gold'].includes(p.award));
       if (passed.length) {

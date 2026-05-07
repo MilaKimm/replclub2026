@@ -1206,10 +1206,22 @@ footer .dot { color: var(--orange); }
   box-shadow: 6px 6px 0 var(--ink);
 }
 
-.award-2 .project-grid, .award-3 .project-grid {
+.award-2 .project-grid, .award-3 .project-grid, .award-special .project-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 16px;
+}
+
+/* 특별상 — orange 톤 */
+.award-special .award-tier-medal { font-size: 28px; }
+.award-special .project-card {
+  border: 1.5px solid var(--orange);
+  background: linear-gradient(135deg, var(--orange-pale) 0%, var(--paper) 100%);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+.award-special .project-card:hover {
+  border-color: var(--orange-deep);
+  box-shadow: 5px 5px 0 var(--ink);
 }
 
 .passed-list {
@@ -1273,6 +1285,7 @@ footer .dot { color: var(--orange); }
 .pc-badge.gold { background: var(--gold); color: var(--ink); }
 .pc-badge.silver { background: #C0C0C0; color: var(--ink); }
 .pc-badge.bronze { background: #CD7F32; color: white; }
+.pc-badge.special { background: var(--orange-pale); color: var(--orange-deep); border: 1.5px solid var(--orange); }
 .pc-badge.passed { background: var(--paper); color: var(--orange); border: 1px solid var(--orange); }
 
 .pc-title {

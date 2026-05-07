@@ -97,26 +97,32 @@
 
         <div class="award-step-row">
           <span class="award-step-num">[1]</span>
-          <div>1차 통과 발표 <span style="color:#888; font-size:12px;">★ 통과 팀 명단 공개</span></div>
+          <div>1차 통과 발표 <span style="color:#888; font-size:12px;">★ 통과 5팀 명단 공개</span></div>
           <span class="award-step-status" id="step1Status">대기</span>
           <button class="admin-btn primary" data-phase="passed">공개</button>
         </div>
         <div class="award-step-row">
           <span class="award-step-num">[2]</span>
-          <div>3위 발표 <span style="color:#888; font-size:12px;">🥉 3팀 공개</span></div>
+          <div>특별상 발표 <span style="color:#888; font-size:12px;">⭐ 6팀 공개</span></div>
           <span class="award-step-status" id="step2Status">대기</span>
-          <button class="admin-btn primary" data-phase="bronze">공개</button>
+          <button class="admin-btn primary" data-phase="special">공개</button>
         </div>
         <div class="award-step-row">
           <span class="award-step-num">[3]</span>
-          <div>2위 발표 <span style="color:#888; font-size:12px;">🥈 1팀 공개</span></div>
+          <div>3위 발표 <span style="color:#888; font-size:12px;">🥉 1팀 공개</span></div>
           <span class="award-step-status" id="step3Status">대기</span>
-          <button class="admin-btn primary" data-phase="silver">공개</button>
+          <button class="admin-btn primary" data-phase="bronze">공개</button>
         </div>
         <div class="award-step-row">
           <span class="award-step-num">[4]</span>
-          <div>1위 발표 <span style="color:#888; font-size:12px;">🥇 1팀 공개</span></div>
+          <div>2위 발표 <span style="color:#888; font-size:12px;">🥈 1팀 공개</span></div>
           <span class="award-step-status" id="step4Status">대기</span>
+          <button class="admin-btn primary" data-phase="silver">공개</button>
+        </div>
+        <div class="award-step-row">
+          <span class="award-step-num">[5]</span>
+          <div>1위 발표 <span style="color:#888; font-size:12px;">🥇 1팀 공개</span></div>
+          <span class="award-step-status" id="step5Status">대기</span>
           <button class="admin-btn primary" data-phase="gold">공개</button>
         </div>
 
@@ -413,6 +419,7 @@
           <select data-award-id="${p.id}">
             <option value="">—</option>
             <option value="passed" ${p.award==='passed'?'selected':''}>★ 1차 통과</option>
+            <option value="special" ${p.award==='special'?'selected':''}>⭐ 특별상</option>
             <option value="bronze" ${p.award==='bronze'?'selected':''}>🥉 3위</option>
             <option value="silver" ${p.award==='silver'?'selected':''}>🥈 2위</option>
             <option value="gold" ${p.award==='gold'?'selected':''}>🥇 1위</option>
@@ -486,10 +493,11 @@
   function refreshPhase() {
     const phase = load(STORE.awardPhase, 'hidden');
     document.getElementById('currentPhase').textContent = phase;
-    const order = ['hidden','passed','bronze','silver','gold'];
+    const order = ['hidden','passed','special','bronze','silver','gold'];
     const idx = order.indexOf(phase);
-    [1,2,3,4].forEach(i => {
+    [1,2,3,4,5].forEach(i => {
       const el = document.getElementById(`step${i}Status`);
+      if (!el) return;
       if (i <= idx) {
         el.textContent = '✅ 공개';
         el.className = 'award-step-status done';

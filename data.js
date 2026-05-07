@@ -8,7 +8,7 @@ window.RC_DATA = {
     deadline: '21:45',
     sosPhone: '010-0000-0000',
     wifi: { ssid: 'HASHED-GUEST', pw: 'replclub2026' },
-    awards: { gold: 1, silver: 1, bronze: 3, passed: 6 },
+    awards: { gold: 1, silver: 1, bronze: 1, special: 6, passed: 5 },
     toiletLocation: '입구 LED 옆',
   },
 
