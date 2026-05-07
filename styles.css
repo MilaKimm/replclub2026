@@ -901,7 +901,7 @@ footer .dot { color: var(--orange); }
   font-family: 'Anton', sans-serif;
   font-size: 40px;
   letter-spacing: 0.02em;
-  color: var(--ink);
+  color: var(--orange);
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
@@ -1011,16 +1011,21 @@ footer .dot { color: var(--orange); }
   gap: 20px;
 }
 .project-card {
-  background: var(--paper);
+  background: white;
   border: 1.5px solid var(--ink);
   border-radius: 16px;
   padding: 22px 22px 18px;
   display: flex; flex-direction: column; gap: 12px;
   cursor: pointer;
-  transition: border-color 0.15s, transform 0.15s;
+  transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
   position: relative;
+  box-shadow: 3px 3px 0 var(--ink);
 }
-.project-card:hover { border-color: var(--orange); transform: translateY(-2px); }
+.project-card:hover {
+  border-color: var(--orange);
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--orange);
+}
 
 .pc-badge {
   position: absolute; top: 12px; right: 12px;

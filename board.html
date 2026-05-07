@@ -24,13 +24,16 @@
 
   <div class="content">
 
-    <div class="section-head">
+    <div class="section-head" style="margin-bottom:16px;">
       <div>
         <div class="eyebrow"><span class="pip"></span> REPL BOARD</div>
         <h2>REPL TIME!</h2>
       </div>
-      <button class="btn btn-primary btn-register" id="newProjectBtn">＋ 프로젝트 등록</button>
     </div>
+    <p style="font-size:15px; color:rgba(14,14,14,0.7); line-height:1.6; margin-bottom:32px; max-width:680px;">
+      4시간의 결과물을 등록하고, 다른 팀의 빌드도 둘러보세요.<br>
+      이 보드를 통해 1차 심사가 진행됩니다.
+    </p>
 
     <div class="board-stats">
       <div class="board-stat">
@@ -53,7 +56,7 @@
           <div class="eyebrow" style="margin-bottom:10px;"><span class="pip"></span> ALL PROJECTS</div>
           <h2 style="font-size:30px;">전체 프로젝트 모아보기</h2>
         </div>
-        <span class="section-tag">최신 등록 순</span>
+        <button class="btn btn-primary btn-register" id="newProjectBtn">＋ 프로젝트 등록</button>
       </div>
       <div class="project-grid" id="projectGrid"></div>
     </section>
@@ -568,11 +571,9 @@
     alert('등록 완료! 보드 상단에서 확인하세요.');
   });
 
-  // overlay 클릭 시 닫기
-  document.querySelectorAll('.modal-overlay').forEach(m => {
-    m.addEventListener('click', (e) => {
-      if (e.target === m) m.classList.remove('open');
-    });
+  // overlay 클릭 시 닫기 — 상세 모달만 (등록 모달은 작성 중 실수 방지)
+  document.getElementById('detailModal').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) e.currentTarget.classList.remove('open');
   });
 
   // 첫 렌더

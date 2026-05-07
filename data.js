@@ -51,7 +51,7 @@ window.RC_DATA = {
     },
     {
       title: '막힐 때 도움 받기',
-      desc: '궁금한 점이 생기면 좌측 사이드바 \'질문 보드\'에 남겨주세요.\n운영팀(REPL CLUB 빌더)이 단계별로 답변해드립니다.',
+      desc: '궁금한 점이 생기면 좌측 사이드바 \'질문 보드\'에 남겨주세요.\nREPL CLUB 운영팀이 단계별로 답변해드립니다.',
       link: 'https://replclub2026.vercel.app/qa.html',
       linkLabel: '질문 보드 →',
     },

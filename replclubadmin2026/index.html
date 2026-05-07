@@ -465,7 +465,7 @@
         <div style="font-size:14.5px; margin-bottom:10px;">${escape(q.body)}</div>
         ${q.reply ? `
           <div style="background:#fafafa; border-left:3px solid var(--orange); padding:10px 14px; margin-bottom:10px;">
-            <div style="font-size:11px; color:var(--orange); font-weight:700; margin-bottom:4px;">REPL CLUB 빌더 · ${escape(q.reply.time)}</div>
+            <div style="font-size:11px; color:var(--orange); font-weight:700; margin-bottom:4px;">REPL CLUB 운영팀 · ${escape(q.reply.time)}</div>
             <div style="font-size:13.5px;">${escape(q.reply.body)}</div>
           </div>
           <div style="display:flex; gap:6px;">
@@ -475,7 +475,7 @@
           </div>
         ` : `
           <div style="display:flex; gap:6px;">
-            <input class="input" data-reply-input="${q.id}" placeholder="답변 작성 (REPL CLUB 빌더 명의)" style="flex:1;">
+            <input class="input" data-reply-input="${q.id}" placeholder="답변 작성 (REPL CLUB 운영팀 명의)" style="flex:1;">
             <button class="admin-btn primary" data-reply-submit="${q.id}">등록</button>
             <button class="admin-btn danger" data-del-q="${q.id}">질문 삭제</button>
           </div>
