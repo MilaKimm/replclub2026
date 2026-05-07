@@ -62,8 +62,11 @@
           <option value="submitted">제출함</option>
           <option value="missing">승인됐지만 미제출 🔴</option>
         </select>
-        <button class="admin-btn">＋ CSV 업로드 (mock)</button>
-        <span style="margin-left:auto; font-size:12px; color:#666;">현재 mock 데이터로 표시 중</span>
+        <button class="admin-btn primary" id="atUploadBtn">＋ CSV 업로드</button>
+        <input type="file" id="atUpload" accept=".csv,text/csv" style="display:none;">
+        <button class="admin-btn" id="atSampleBtn">📥 양식 다운로드</button>
+        <button class="admin-btn" id="atResetBtn" style="color:#999;">↩︎ mock으로 되돌리기</button>
+        <span style="margin-left:auto; font-size:12px; color:#666;" id="atSourceLabel">현재: mock 데이터</span>
       </div>
 
       <table class="admin-table">
@@ -227,6 +230,7 @@
     timetableTimes: 'rc_timetable_times',
     notice: 'rc_notice',
     config: 'rc_config',
+    attendees: 'rc_attendees_2026',
   };
 
   function load(key, fallback) {
@@ -258,8 +262,9 @@
     return load(STORE.projects, RC_DATA.projects);
   }
   function getAttendees() {
-    // 참석자 mock + 프로젝트에서 자동 매칭
-    const attendees = [...RC_DATA.attendees];
+    // localStorage에 업로드된 명단 우선, 없으면 mock
+    const stored = load(STORE.attendees, null);
+    const attendees = stored ? stored.map(a => ({ ...a })) : RC_DATA.attendees.map(a => ({ ...a }));
     const projects = getProjects();
     // 프로젝트에 등록된 팀원 이름 → 매칭
     attendees.forEach(a => {
@@ -268,6 +273,82 @@
     });
     return attendees;
   }
+
+  function isAttendeesUploaded() {
+    return !!localStorage.getItem(STORE.attendees);
+  }
+
+  // CSV 파싱 (단순 양식: name,email,source,approved)
+  function parseAttendeesCSV(text) {
+    const lines = text.split(/\r?\n/).filter(l => l.trim());
+    if (lines.length < 2) return null;
+    const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+    const nameIdx = headers.indexOf('name');
+    const emailIdx = headers.indexOf('email');
+    const sourceIdx = headers.indexOf('source');
+    const approvedIdx = headers.indexOf('approved');
+    if (nameIdx < 0 || emailIdx < 0) return null;
+    return lines.slice(1).map(line => {
+      const cols = line.split(',').map(c => c.trim());
+      const ap = (cols[approvedIdx] || '').toUpperCase();
+      return {
+        name: cols[nameIdx] || '',
+        email: cols[emailIdx] || '',
+        source: cols[sourceIdx] || '',
+        approved: ['TRUE', '1', 'Y', 'YES', 'O', '승인'].includes(ap),
+        team: null,
+      };
+    }).filter(a => a.name);
+  }
+
+  // CSV 업로드
+  document.getElementById('atUploadBtn').addEventListener('click', () => {
+    document.getElementById('atUpload').click();
+  });
+  document.getElementById('atUpload').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const text = await file.text();
+    const arr = parseAttendeesCSV(text);
+    if (!arr) {
+      alert('❌ CSV 형식이 올바르지 않습니다.\n헤더에 name, email 컬럼이 필요합니다.\n양식 다운로드 버튼을 참고해주세요.');
+      e.target.value = '';
+      return;
+    }
+    if (!confirm(`${arr.length}명의 참석자 명단을 업로드합니다. 기존 mock 데이터는 대체됩니다. 계속할까요?`)) {
+      e.target.value = '';
+      return;
+    }
+    save(STORE.attendees, arr);
+    e.target.value = '';
+    renderAttendees();
+    alert(`✅ ${arr.length}명 업로드 완료`);
+  });
+
+  // 샘플 양식 다운로드
+  document.getElementById('atSampleBtn').addEventListener('click', () => {
+    const sample = 'name,email,source,approved\n' +
+      '김수아,sua@example.com,공개모집,TRUE\n' +
+      '이일렌,ellen@example.com,초대용,TRUE\n' +
+      '박미쉘,michelle@example.com,공개모집,TRUE\n' +
+      '최영수,ys@example.com,공개모집,FALSE\n';
+    const blob = new Blob(['﻿' + sample], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'replclub_attendees_sample.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  // mock 되돌리기
+  document.getElementById('atResetBtn').addEventListener('click', () => {
+    if (!confirm('업로드한 명단을 삭제하고 mock 데이터로 되돌릴까요?')) return;
+    localStorage.removeItem(STORE.attendees);
+    renderAttendees();
+  });
 
   function renderAttendees() {
     const all = getAttendees();
@@ -308,6 +389,11 @@
     document.getElementById('atApproved').textContent = all.filter(a => a.approved).length;
     document.getElementById('atSubmitted').textContent = all.filter(a => a.team).length;
     document.getElementById('atMissing').textContent = all.filter(a => a.approved && !a.team).length;
+
+    const lbl = document.getElementById('atSourceLabel');
+    if (lbl) lbl.innerHTML = isAttendeesUploaded()
+      ? `<b style="color:var(--green);">✅ 업로드됨 (${all.length}명)</b>`
+      : '현재: mock 데이터';
   }
 
   document.getElementById('atSearch').addEventListener('input', renderAttendees);
@@ -540,18 +626,20 @@
 
   // ============ 콘텐츠 / 타임테이블 ============
   const TIMETABLE = [
-    { time: '19:00', label: '체크인 + 간식 🍕' },
-    { time: '19:20', label: '오프닝 🎉' },
-    { time: '19:30', label: 'Replit 본사 Keynote' },
-    { time: '19:45', label: '빌드 타임 (2시간)' },
+    { time: '18:30', label: '체크인 + 간단한 저녁 제공' },
+    { time: '19:10', label: '오프닝' },
+    { time: '19:15', label: 'Replit 본사 Keynote' },
+    { time: '19:25', label: '행사 진행 안내' },
+    { time: '19:45', label: '빌드 타임 시작' },
     { time: '21:45', label: '제출 마감' },
-    { time: '22:00', label: '상위 팀 발표 🎤' },
-    { time: '22:30', label: '시상식 🏆' },
-    { time: '22:40', label: '자유 네트워킹 🍻' },
+    { time: '22:00', label: '상위 팀 발표' },
+    { time: '22:35', label: '시상식' },
   ];
+  // 새 timetable 기준: 제출 마감은 index 5
+  const DEADLINE_IDX = 5;
 
   function renderTimetable() {
-    const current = load(STORE.timetable, 3); // index of current step (default 빌드 타임)
+    const current = load(STORE.timetable, 4); // index of current step (default 빌드 타임 시작)
     const times = load(STORE.timetableTimes, TIMETABLE.map(t => t.time));
     const wrap = document.getElementById('timetableControl');
     wrap.innerHTML = `<div style="background:white; border:1px solid #ddd; border-radius:8px; padding:16px;">

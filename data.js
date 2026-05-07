@@ -14,14 +14,14 @@ window.RC_DATA = {
   },
 
   timetable: [
-    { time: '19:00', label: '체크인 + 간식 🍕', link: null },
-    { time: '19:20', label: '오프닝 🎉', link: null },
-    { time: '19:30', label: 'Replit 본사 Keynote', link: 'https://replit-douzone-hackathon.replit.app/' },
-    { time: '19:45', label: '빌드 타임 — 2시간', link: null, isNow: true },
+    { time: '18:30', label: '체크인 + 간단한 저녁 제공', link: null },
+    { time: '19:10', label: '오프닝', link: null },
+    { time: '19:15', label: 'Replit 본사 Keynote', link: 'https://replit-douzone-hackathon.replit.app/' },
+    { time: '19:25', label: '행사 진행 안내', link: null },
+    { time: '19:45', label: '빌드 타임 시작', link: null, isNow: true },
     { time: '21:45', label: '제출 마감', link: null },
-    { time: '22:00', label: '상위 팀 발표 🎤', link: null },
-    { time: '22:30', label: '시상식 🏆', link: null },
-    { time: '22:40', label: '자유 네트워킹 🍻', link: null },
+    { time: '22:00', label: '상위 팀 발표', link: null },
+    { time: '22:35', label: '시상식', link: null },
   ],
 
   replitGuide: [

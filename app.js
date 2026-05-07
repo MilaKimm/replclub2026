@@ -45,11 +45,26 @@
       `${pad(d.getHours())}<span class="colon">:</span>${pad(d.getMinutes())}<span class="colon">:</span>${pad(d.getSeconds())}`;
   }
 
-  // 마감 시간 (행사 당일 21:45). 데모용으로 현재 날짜의 21:45로 설정.
+  // 마감 시간 = 어드민 타임테이블의 '제출 마감' 시간 (index 5).
+  // 어드민이 시간 수정하면 localStorage('rc_timetable_times')에 저장됨.
   function getDeadline() {
     const now = new Date();
+    let h = 21, m = 45;
+    try {
+      const raw = localStorage.getItem('rc_timetable_times');
+      if (raw) {
+        const times = JSON.parse(raw);
+        if (Array.isArray(times) && times[5]) {
+          const parts = String(times[5]).split(':');
+          const ph = parseInt(parts[0]);
+          const pm = parseInt(parts[1]);
+          if (!isNaN(ph)) h = ph;
+          if (!isNaN(pm)) m = pm;
+        }
+      }
+    } catch (e) {}
     const d = new Date(now);
-    d.setHours(21, 45, 0, 0);
+    d.setHours(h, m, 0, 0);
     return d;
   }
 
@@ -72,22 +87,7 @@
     if (labelEl) labelEl.textContent = label;
 
     const banner = document.getElementById('bannerCountdown');
-    if (banner) banner.textContent = `${h}h ${pad(m)}m`;
-  }
-
-  function initAdminEntry() {
-    const entry = document.querySelector('.admin-entry');
-    const link = document.querySelector('.admin-entry-link');
-    if (!entry || !link) return;
-    entry.addEventListener('click', (e) => {
-      e.stopPropagation();
-      link.classList.toggle('show');
-    });
-    document.addEventListener('click', (e) => {
-      if (!link.contains(e.target) && e.target !== entry) {
-        link.classList.remove('show');
-      }
-    });
+    if (banner) banner.textContent = `${h}h ${pad(m)}m ${pad(s)}s`;
   }
 
   function initReveal() {
@@ -123,7 +123,6 @@
     tickCountdown();
     setInterval(tickClock, 1000);
     setInterval(tickCountdown, 1000);
-    initAdminEntry();
     initReveal();
     applyCustomTimetableTimes();
   });

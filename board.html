@@ -30,9 +30,8 @@
         <h2>REPL TIME!</h2>
       </div>
     </div>
-    <p style="font-size:15px; color:rgba(14,14,14,0.7); line-height:1.6; margin-bottom:32px; max-width:680px;">
-      4시간의 결과물을 등록하고, 다른 팀의 빌드도 둘러보세요.<br>
-      이 보드를 통해 1차 심사가 진행됩니다.
+    <p style="font-size:15px; color:rgba(14,14,14,0.7); line-height:1.6; margin-bottom:32px; max-width:720px;">
+      나의 프로젝트를 등록하고, 다른 팀의 빌드도 둘러보세요. 다같이 뚱땅뚱땅 레플 타임!
     </p>
 
     <div class="board-stats">
@@ -64,8 +63,6 @@
     <footer>
       <div>REPL CLUB</div>
       <div>(주)마켓핏랩 <span class="dot">●</span> © 2026 MarketFitLab Inc. All rights reserved.</div>
-      <div class="admin-entry"></div>
-      <a class="admin-entry-link" href="replclubadmin2026/">ADMIN ↗</a>
     </footer>
 
   </div>
@@ -338,11 +335,16 @@
   function tickBoardCountdown() {
     const now = new Date();
     let diff = window.RC.getDeadline() - now;
-    if (diff < 0) diff = 0;
-    const h = Math.floor(diff/3600000);
-    const m = Math.floor((diff%3600000)/60000);
     const el = document.getElementById('boardCountdown');
-    if (el) el.textContent = `${h}h ${window.RC.pad(m)}m`;
+    if (!el) return;
+    if (diff <= 0) {
+      el.textContent = '마감';
+      return;
+    }
+    const h = Math.floor(diff / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    el.textContent = `${h}h ${window.RC.pad(m)}m ${window.RC.pad(s)}s`;
   }
 
   // ============ 상세 모달 ============
