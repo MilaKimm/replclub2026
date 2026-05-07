@@ -1,0 +1,14 @@
+{
+  "name": "replclub-2026",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server/index.mjs",
+    "dev": "node server/index.mjs"
+  },
+  "dependencies": {
+    "express": "^4.22.1",
+    "pg": "^8.20.0"
+  }
+}

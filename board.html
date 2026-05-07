@@ -143,6 +143,7 @@
   </div>
 </div>
 
+<script src="rc-sync.js"></script>
 <script src="data.js"></script>
 <script src="app.js"></script>
 <script>
@@ -155,24 +156,24 @@
   const DEMO_AWARDS = {};
 
   function loadProjects() {
-    const saved = localStorage.getItem(STORE_KEY);
-    if (saved) {
-      try { return JSON.parse(saved); } catch (e) {}
-    }
-    // 초기화: RC_DATA + 데모 시상자 지정
+    const v = RCSync.get(STORE_KEY);
+    if (Array.isArray(v)) return v;
+    // 첫 진입 — 로컬 시드. rc-sync.js의 404 분기가 이걸 서버로 PUT 함.
     const init = RC_DATA.projects.map(p => ({ ...p, award: DEMO_AWARDS[p.id] || null }));
-    localStorage.setItem(STORE_KEY, JSON.stringify(init));
+    RCSync.put(STORE_KEY, init);
     return init;
   }
-  function saveProjects(p) { localStorage.setItem(STORE_KEY, JSON.stringify(p)); }
-  function getPhase() { return localStorage.getItem(AWARD_KEY) || 'hidden'; }
+  function saveProjects(p) { RCSync.put(STORE_KEY, p); }
+  function getPhase() {
+    const v = RCSync.get(AWARD_KEY);
+    return (typeof v === 'string' && v) ? v : 'hidden';
+  }
 
   function loadComments() {
-    const saved = localStorage.getItem(COMMENTS_KEY);
-    if (saved) { try { return JSON.parse(saved); } catch(e) {} }
-    return {};
+    const v = RCSync.get(COMMENTS_KEY);
+    return (v && typeof v === 'object' && !Array.isArray(v)) ? v : {};
   }
-  function saveComments(c) { localStorage.setItem(COMMENTS_KEY, JSON.stringify(c)); }
+  function saveComments(c) { RCSync.put(COMMENTS_KEY, c); }
 
   // 시상 뱃지 (phase에 따라 노출 여부 결정)
   // phase 진행 순서: hidden → passed → special → bronze → silver → gold
@@ -569,8 +570,12 @@
   // 첫 렌더
   render();
   tickBoardCountdown();
-  setInterval(render, 5000); // 5초 폴링
   setInterval(tickBoardCountdown, 1000);
+  // 다른 디바이스(어드민/다른 참가자) 변경분을 5초 ETag 폴링으로 반영
+  RCSync.on(STORE_KEY, render);
+  RCSync.on(AWARD_KEY, render);
+  RCSync.on(COMMENTS_KEY, render);
+  RCSync.start([STORE_KEY, AWARD_KEY, COMMENTS_KEY]);
 })();
 </script>
 

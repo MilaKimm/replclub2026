@@ -122,17 +122,23 @@
   </div>
 </main>
 
+<script src="rc-sync.js"></script>
 <script src="data.js"></script>
 <script src="app.js"></script>
 <script>
 (function () {
-  // 현장 안내 - localStorage config 우선, 없으면 RC_DATA.config
-  const cfg = (() => { try { return JSON.parse(localStorage.getItem('rc_config')) || {}; } catch (e) { return {}; } })();
+  // 현장 안내 - 서버 동기화된 rc_config 우선, 없으면 RC_DATA.config
   const c = RC_DATA.config;
-  document.getElementById('cfgSsidView').textContent = cfg.ssid || c.wifi.ssid;
-  document.getElementById('cfgWifiPwView').textContent = cfg.wifiPw || c.wifi.pw;
-  document.getElementById('cfgToiletView').textContent = cfg.toilet || c.toiletLocation;
-  document.getElementById('cfgPhoneView').textContent = cfg.phone || c.sosPhone;
+  function renderConfig() {
+    const cfg = RCSync.get('rc_config') || {};
+    document.getElementById('cfgSsidView').textContent = cfg.ssid || c.wifi.ssid;
+    document.getElementById('cfgWifiPwView').textContent = cfg.wifiPw || c.wifi.pw;
+    document.getElementById('cfgToiletView').textContent = cfg.toilet || c.toiletLocation;
+    document.getElementById('cfgPhoneView').textContent = cfg.phone || c.sosPhone;
+  }
+  renderConfig();
+  RCSync.on('rc_config', renderConfig);
+  RCSync.start(['rc_config']);
 
   function escape(s) {
     return String(s ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[ch]);

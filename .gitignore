@@ -6,4 +6,9 @@ node_modules
 .env
 .env.local
 
-.vercel
+# Build outputs / leftovers from previous backend integration attempts
+artifacts/
+lib/
+.migration-backup/
+scripts/
+.agents/

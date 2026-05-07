@@ -210,10 +210,11 @@
   </div>
 </div>
 
+<script src="../rc-sync.js"></script>
 <script src="../data.js"></script>
 <script>
 (function() {
-  // ============ Storage helpers ============
+  // ============ Storage helpers (서버 동기화) ============
   const STORE = {
     projects: 'rc_projects_2026',
     qa: 'rc_qa_2026',
@@ -226,12 +227,11 @@
   };
 
   function load(key, fallback) {
-    const v = localStorage.getItem(key);
-    if (!v) return fallback;
-    try { return JSON.parse(v); } catch(e) { return v; }
+    const v = RCSync.get(key);
+    return (v === undefined || v === null) ? fallback : v;
   }
   function save(key, v) {
-    localStorage.setItem(key, typeof v === 'string' ? v : JSON.stringify(v));
+    RCSync.put(key, v);
   }
   function escape(s) {
     return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
@@ -271,7 +271,7 @@
   }
 
   function isAttendeesUploaded() {
-    return !!localStorage.getItem(STORE.attendees);
+    return RCSync.get(STORE.attendees) != null;
   }
 
   // CSV 파싱 (단순 양식: name,phone,source,approved)
@@ -342,7 +342,8 @@
   // mock 되돌리기
   document.getElementById('atResetBtn').addEventListener('click', () => {
     if (!confirm('업로드한 명단을 삭제하고 mock 데이터로 되돌릴까요?')) return;
-    localStorage.removeItem(STORE.attendees);
+    // 서버에는 빈 배열로 표시 (DELETE 미지원), 로컬도 비움
+    RCSync.put(STORE.attendees, []);
     renderAttendees();
   });
 
@@ -675,7 +676,8 @@
 
     document.getElementById('resetTimes').addEventListener('click', () => {
       if (!confirm('기본값(data.js 시간)으로 되돌릴까요?')) return;
-      localStorage.removeItem(STORE.timetableTimes);
+      // 서버에 기본값을 덮어써서 다른 디바이스도 동기화
+      RCSync.put(STORE.timetableTimes, TIMETABLE.map(t => t.time));
       renderTimetable();
     });
   }
@@ -707,13 +709,19 @@
   renderTimetable();
   loadCfg();
 
-  // 자동 갱신 (다른 어드민/사용자 변경 반영)
-  setInterval(() => {
-    renderAttendees();
-    renderProjects();
-    refreshPhase();
-    renderQA();
-  }, 5000);
+  // 서버 변경분 자동 반영 (5초 ETag 폴링 + 변경 시 즉시 콜백)
+  RCSync.on(STORE.projects, () => { renderProjects(); renderAttendees(); });
+  RCSync.on(STORE.qa, renderQA);
+  RCSync.on(STORE.awardPhase, refreshPhase);
+  RCSync.on(STORE.attendees, renderAttendees);
+  RCSync.on(STORE.timetableTimes, renderTimetable);
+  RCSync.on(STORE.timetable, renderTimetable);
+  RCSync.on(STORE.config, loadCfg);
+  RCSync.start([
+    STORE.projects, STORE.qa, STORE.awardPhase, STORE.attendees,
+    STORE.timetableTimes, STORE.timetable, STORE.config, STORE.notice,
+    'rc_comments_2026',
+  ]);
 })();
 </script>
 

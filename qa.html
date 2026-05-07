@@ -58,6 +58,7 @@
   </div>
 </main>
 
+<script src="rc-sync.js"></script>
 <script src="data.js"></script>
 <script src="app.js"></script>
 <script>
@@ -66,12 +67,13 @@
   let currentFilter = 'all';
 
   function loadQA() {
-    const saved = localStorage.getItem(STORE_KEY);
-    if (saved) { try { return JSON.parse(saved); } catch(e) {} }
-    localStorage.setItem(STORE_KEY, JSON.stringify(RC_DATA.qa));
+    const v = RCSync.get(STORE_KEY);
+    if (Array.isArray(v)) return v;
+    // 첫 진입 — 로컬 시드. rc-sync.js의 404 분기가 이걸 서버로 PUT 함.
+    RCSync.put(STORE_KEY, RC_DATA.qa);
     return RC_DATA.qa;
   }
-  function saveQA(arr) { localStorage.setItem(STORE_KEY, JSON.stringify(arr)); }
+  function saveQA(arr) { RCSync.put(STORE_KEY, arr); }
 
   function escape(s) {
     return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
@@ -147,7 +149,9 @@
   });
 
   render();
-  setInterval(render, 5000);
+  // 다른 디바이스(어드민/다른 참가자)가 질문/답변을 바꾸면 즉시 재렌더
+  RCSync.on(STORE_KEY, render);
+  RCSync.start([STORE_KEY]);
 })();
 </script>
 

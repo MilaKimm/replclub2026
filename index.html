@@ -86,7 +86,12 @@
   </div>
 </main>
 
+<script src="rc-sync.js"></script>
 <script src="data.js"></script>
 <script src="app.js"></script>
+<script>
+  // 타임테이블 시간을 서버에서 5초마다 동기화 (app.js가 localStorage에서 읽어 자동 반영)
+  RCSync.start(['rc_timetable_times']);
+</script>
 </body>
 </html>
