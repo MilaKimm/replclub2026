@@ -871,68 +871,63 @@ footer .dot { color: var(--orange); }
 }
 .board-toolbar-meta b { color: var(--orange); }
 
-/* 상금 박스 */
-.prize-box {
-  margin-bottom: 32px;
-  padding: 24px 32px;
-  background: var(--orange-pale);
-  border: 1.5px solid var(--orange);
-  border-radius: 14px;
-}
-.prize-box-head {
-  display: flex; align-items: center; gap: 10px;
-  margin-bottom: 8px;
-  font-family: 'Anton', sans-serif;
-  font-size: 24px;
-  letter-spacing: 0.02em;
-  color: var(--ink);
-}
-.prize-list { display: flex; flex-direction: column; }
-.prize-row {
+/* 보드 stat 강조 — 총 X팀 / 제출까지 카운트다운 */
+.board-stats {
   display: grid;
-  grid-template-columns: 32px 80px 1fr auto;
-  gap: 18px;
-  align-items: center;
-  padding: 14px 0;
-  border-bottom: 1px dashed rgba(255,60,0,0.3);
+  grid-template-columns: 1fr 1.4fr;
+  gap: 14px;
+  margin-bottom: 28px;
 }
-.prize-row:last-child { border-bottom: 0; }
-.prize-medal { font-size: 22px; line-height: 1; }
-.prize-rank {
-  font-weight: 700;
-  font-size: 15px;
-  color: var(--ink);
+.board-stat {
+  background: var(--paper);
+  border: 1.5px solid var(--ink);
+  border-radius: 14px;
+  padding: 18px 24px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
 }
-.prize-amount {
+.board-stat-label {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 14px;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  color: var(--gray);
   font-weight: 700;
-  color: var(--orange-deep);
+  text-transform: uppercase;
   white-space: nowrap;
 }
-.prize-meta {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
+.board-stat-value {
+  font-family: 'Anton', sans-serif;
+  font-size: 40px;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.board-stat-value .unit {
+  font-size: 14px;
   color: var(--gray);
+  margin-left: 4px;
+  font-family: 'Pretendard', sans-serif;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  vertical-align: 4px;
 }
-
-/* 보드 메타 라인 (총 X팀 / 제출까지) */
-.board-meta-row {
-  display: flex; gap: 14px; justify-content: center; align-items: center;
-  margin-bottom: 32px;
-  padding: 14px 20px;
-  background: var(--paper);
-  border: 1px dashed var(--ink);
-  border-radius: 10px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 13px; font-weight: 700;
-  color: var(--gray);
-  letter-spacing: 0.06em;
-  flex-wrap: wrap;
+.board-stat.urgent {
+  background: var(--ink);
+  border-color: var(--ink);
+  position: relative;
+  overflow: hidden;
 }
-.board-meta-row b { color: var(--orange); font-size: 14.5px; }
+.board-stat.urgent::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at right, rgba(255,60,0,0.15), transparent 60%);
+  pointer-events: none;
+}
+.board-stat.urgent .board-stat-label { color: var(--gold); }
+.board-stat.urgent .board-stat-value { color: var(--orange); position: relative; z-index: 1; }
 
 /* 등록 버튼 강조 */
 .btn-register {
@@ -1535,6 +1530,7 @@ footer .dot { color: var(--orange); }
   .qa-form { grid-template-columns: 1fr; }
   .field-row { grid-template-columns: 1fr; }
   .judging-grid { grid-template-columns: 1fr; }
+  .board-stats { grid-template-columns: 1fr; }
   .criteria-row { grid-template-columns: 100px 1fr 50px; gap: 10px; }
   .info-section { padding: 40px 0; }
 }

@@ -32,40 +32,15 @@
       <button class="btn btn-primary btn-register" id="newProjectBtn">＋ 프로젝트 등록</button>
     </div>
 
-    <div class="prize-box">
-      <div class="prize-box-head">🏆 상금</div>
-      <div class="prize-list">
-        <div class="prize-row">
-          <span class="prize-medal">🥇</span>
-          <span class="prize-rank">1등</span>
-          <span class="prize-amount">$3,000 Replit 크레딧</span>
-          <span class="prize-meta">1명</span>
-        </div>
-        <div class="prize-row">
-          <span class="prize-medal">🥈</span>
-          <span class="prize-rank">2등</span>
-          <span class="prize-amount">$2,000 Replit 크레딧</span>
-          <span class="prize-meta">1명</span>
-        </div>
-        <div class="prize-row">
-          <span class="prize-medal">🥉</span>
-          <span class="prize-rank">3등</span>
-          <span class="prize-amount">$1,000 Replit 크레딧</span>
-          <span class="prize-meta">1명</span>
-        </div>
-        <div class="prize-row">
-          <span class="prize-medal">⭐</span>
-          <span class="prize-rank">특별상</span>
-          <span class="prize-amount">Replit Core 6개월 구독</span>
-          <span class="prize-meta">6명</span>
-        </div>
+    <div class="board-stats">
+      <div class="board-stat">
+        <div class="board-stat-label">총 등록</div>
+        <div class="board-stat-value"><span id="projectCount">-</span><span class="unit">팀</span></div>
       </div>
-    </div>
-
-    <div class="board-meta-row">
-      <span>총 <b id="projectCount">-</b>팀 등록</span>
-      <span style="opacity:0.4">·</span>
-      <span>제출까지 <b id="boardCountdown">-</b></span>
+      <div class="board-stat urgent">
+        <div class="board-stat-label">제출 마감까지</div>
+        <div class="board-stat-value"><span id="boardCountdown">-</span></div>
+      </div>
     </div>
 
     <!-- 시상 영역 (어드민이 단계별 공개 시 노출) -->
@@ -73,10 +48,10 @@
 
     <!-- 전체 프로젝트 -->
     <section>
-      <div class="section-head">
+      <div class="section-head" style="margin-bottom:20px;">
         <div>
-          <div class="eyebrow"><span class="pip"></span> ALL PROJECTS</div>
-          <h2 style="font-size:42px;">전체 프로젝트 모아보기</h2>
+          <div class="eyebrow" style="margin-bottom:10px;"><span class="pip"></span> ALL PROJECTS</div>
+          <h2 style="font-size:30px;">전체 프로젝트 모아보기</h2>
         </div>
         <span class="section-tag">최신 등록 순</span>
       </div>
