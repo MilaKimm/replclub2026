@@ -92,22 +92,10 @@
         </div>
       </div>
 
-      <div class="judging-grid">
-        <div class="judging-block">
-          <h3>심사위원</h3>
-          <ul class="judges-list" id="judgesList"></ul>
-        </div>
-        <div class="judging-block">
-          <h3>심사 흐름</h3>
-          <div class="process-list" id="processList"></div>
-        </div>
-      </div>
+      <!-- 1차 / 2차 심사 (각 박스) -->
+      <div class="judging-grid" id="processGrid"></div>
 
-      <div class="judging-block" style="margin-top:16px;">
-        <h3>평가 기준</h3>
-        <div id="criteriaList"></div>
-      </div>
-
+      <!-- 환영 주제 -->
       <div class="judging-block welcome-topics" style="margin-top:16px;">
         <h3>🌱 이번 해커톤에서 환영하는 주제</h3>
         <p class="welcome-intro">이번 Replit 해커톤은 <b>"사내에서 반복적으로 쓰는 업무 도구, 실질적으로 쓰이는 서비스"</b>에 가치를 두고 있어요.</p>
@@ -117,6 +105,12 @@
           <li>자료 정리, 검색, 보고를 빠르게 해주는 도구</li>
           <li>회의 준비나 의사결정을 돕는 도구</li>
         </ul>
+      </div>
+
+      <!-- 평가 기준 (가장 하단) -->
+      <div class="judging-block" style="margin-top:16px;">
+        <h3>평가 기준</h3>
+        <div id="criteriaList"></div>
       </div>
     </section>
 
@@ -157,16 +151,11 @@
     </div>
   `).join('');
 
-  // 심사위원
-  document.getElementById('judgesList').innerHTML = RC_DATA.judging.judges.map(j => `
-    <li><b>${escape(j.name)}</b><span>${escape(j.role)}</span></li>
-  `).join('');
-
-  // 심사 흐름 (1차/2차 단계별 bullet)
-  document.getElementById('processList').innerHTML = RC_DATA.judging.process.map(p => `
-    <div class="process-stage">
-      <div class="process-stage-title">${escape(p.title)}</div>
-      <ul>
+  // 심사 흐름 — 1차/2차 각 박스
+  document.getElementById('processGrid').innerHTML = RC_DATA.judging.process.map(p => `
+    <div class="judging-block">
+      <h3>${escape(p.title)}</h3>
+      <ul class="stage-items">
         ${p.items.map(it => `<li>${escape(it)}</li>`).join('')}
       </ul>
     </div>
