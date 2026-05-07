@@ -874,47 +874,45 @@ footer .dot { color: var(--orange); }
 /* 상금 박스 */
 .prize-box {
   margin-bottom: 32px;
-  padding: 28px 32px;
-  background: linear-gradient(135deg, var(--orange-pale), var(--paper));
+  padding: 24px 32px;
+  background: var(--orange-pale);
   border: 1.5px solid var(--orange);
-  border-radius: 16px;
+  border-radius: 14px;
 }
 .prize-box-head {
-  display: flex; align-items: center; gap: 12px;
-  margin-bottom: 18px;
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 8px;
   font-family: 'Anton', sans-serif;
-  font-size: 28px;
+  font-size: 24px;
   letter-spacing: 0.02em;
   color: var(--ink);
 }
-.prize-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 12px;
-}
+.prize-list { display: flex; flex-direction: column; }
 .prize-row {
-  display: flex; align-items: center; gap: 14px;
-  padding: 14px 18px;
-  background: var(--paper);
-  border-radius: 10px;
-  border: 1px solid var(--orange);
+  display: grid;
+  grid-template-columns: 32px 80px 1fr auto;
+  gap: 18px;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px dashed rgba(255,60,0,0.3);
 }
-.prize-medal { font-size: 24px; }
-.prize-info { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+.prize-row:last-child { border-bottom: 0; }
+.prize-medal { font-size: 22px; line-height: 1; }
 .prize-rank {
   font-weight: 700;
-  font-size: 14px;
+  font-size: 15px;
   color: var(--ink);
 }
 .prize-amount {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--orange-deep);
+  white-space: nowrap;
 }
 .prize-meta {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--gray);
   font-weight: 700;
   letter-spacing: 0.04em;
