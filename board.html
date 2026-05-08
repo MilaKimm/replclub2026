@@ -248,13 +248,7 @@
     if (phase === 'hidden') return '';
     const order = ['hidden','passed','special','bronze','silver','gold'];
     const reveal = order.indexOf(phase);
-    let html = `<div class="section-head" style="margin-bottom:24px;">
-      <div>
-        <div class="eyebrow"><span class="pip"></span> AWARDS</div>
-        <h2 style="font-size:48px;">시상 결과</h2>
-      </div>
-      <span class="section-tag">▸ 단계별 공개 중</span>
-    </div>`;
+    let html = '';
 
     // 1위 (gold)
     if (reveal >= 5) {
@@ -318,7 +312,15 @@
         </div>`;
       }
     }
-    return html;
+    // 공개된 시상 결과가 하나도 없으면 제목까지 통째로 숨김
+    if (!html) return '';
+    return `<div class="section-head" style="margin-bottom:24px;">
+      <div>
+        <div class="eyebrow"><span class="pip"></span> AWARDS</div>
+        <h2 style="font-size:48px;">시상 결과</h2>
+      </div>
+      <span class="section-tag">▸ 단계별 공개 중</span>
+    </div>` + html;
   }
 
   function render() {
@@ -338,12 +340,13 @@
     document.getElementById('projectGrid').innerHTML = sorted.map(p => projectCard(p, phase)).join('');
 
     const awardsEl = document.getElementById('awardsSection');
-    if (phase === 'hidden') {
+    const awardsHtml = phase === 'hidden' ? '' : renderAwards(projects, phase);
+    if (!awardsHtml) {
       awardsEl.style.display = 'none';
       awardsEl.innerHTML = '';
     } else {
       awardsEl.style.display = 'block';
-      awardsEl.innerHTML = renderAwards(projects, phase);
+      awardsEl.innerHTML = awardsHtml;
     }
 
     // 카드 클릭
