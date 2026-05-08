@@ -32,7 +32,7 @@ window.RC_DATA = {
     },
     {
       title: '크레딧 신청',
-      desc: '레플클럽 구글폼에 본인 Replit 계정을 제출해주세요.\n행사 당일 본인 계정에 $100 상당의 Pro 구독이 지급됩니다.\n※ Luma 참가 승인 대상자에 한해 1인 1회 지급됩니다.',
+      desc: '레플클럽 구글폼에 본인 Replit 계정을 제출해주세요.\n행사 당일 본인 계정에 $100 상당의 Pro 구독이 지급됩니다.\n※ Luma 참가 승인 대상자에 한해 1인 1회 지급됩니다.\n※ 지급 여부 확인 방법: 로그인 > Settings > Billing > Current plan',
       link: 'https://forms.gle/uhAnQvrqn18ZSqRq9',
       linkLabel: '구글폼 제출하기 →',
     },
