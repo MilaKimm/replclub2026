@@ -143,7 +143,6 @@
             <tr>
               <th>팀명</th>
               <th>팀원</th>
-              <th>연락처</th>
               <th>한줄 소개</th>
               <th>등록</th>
               <th>시상 지정</th>
@@ -258,14 +257,24 @@
     const stored = load(STORE.attendees, null);
     const attendees = stored ? stored.map(a => ({ ...a })) : RC_DATA.attendees.map(a => ({ ...a }));
     const projects = getProjects();
-    // 프로젝트 팀원 전화번호와 매칭 (정규화: 공백/하이픈 제거)
-    const normalize = (s) => String(s || '').replace(/[\s-]/g, '');
+    // 프로젝트 팀원 이름과 매칭 (입장 비표 이름 기준, exact match)
+    // 같은 이름이 여러 프로젝트에 등장하면 첫 번째 프로젝트에만 귀속 (방어 로직)
+    const claimed = new Set();
     attendees.forEach(a => {
-      const phone = normalize(a.phone);
-      const found = phone ? projects.find(p =>
-        (p._privateMembers || []).some(m => normalize(m.phone) === phone)
-      ) : null;
-      a.team = found ? found.team : null;
+      const name = a.name || '';
+      if (!name || claimed.has(name)) {
+        a.team = null;
+        return;
+      }
+      const found = projects.find(p =>
+        (p.members || []).some(m => m === name)
+      );
+      if (found) {
+        a.team = found.team;
+        claimed.add(name);
+      } else {
+        a.team = null;
+      }
     });
     return attendees;
   }
@@ -409,11 +418,9 @@
 
     const tb = document.getElementById('prjTbody');
     tb.innerHTML = filtered.map(p => {
-      const phones = (p._privateMembers || []).map(m => m.phone).filter(Boolean).join(', ') || '010-XXXX-XXXX';
       return `<tr>
         <td><b>${escape(p.team)}</b></td>
         <td>${(p.members||[]).map(escape).join(' · ')}</td>
-        <td style="font-family:'JetBrains Mono', monospace; font-size:12px;">${escape(phones)}</td>
         <td style="max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escape(p.tagline)}</td>
         <td style="font-family:'JetBrains Mono', monospace;">${escape(p.registeredAt)}</td>
         <td>
@@ -432,7 +439,7 @@
           <button class="admin-btn danger" data-del="${p.id}">🗑</button>
         </td>
       </tr>`;
-    }).join('') || '<tr><td colspan="7" style="text-align:center; color:#999; padding:24px;">등록된 프로젝트가 없어요</td></tr>';
+    }).join('') || '<tr><td colspan="6" style="text-align:center; color:#999; padding:24px;">등록된 프로젝트가 없어요</td></tr>';
 
     // 시상 지정 select
     tb.querySelectorAll('select[data-award-id]').forEach(sel => {

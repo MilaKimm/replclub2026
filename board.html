@@ -79,15 +79,11 @@
 
       <div class="field">
         <label class="field-label">팀원 (최대 2명)</label>
-        <div class="field-row" style="margin-bottom:8px;">
-          <input class="input" name="member1Name" placeholder="이름" required>
-          <input class="input" name="member1Phone" placeholder="연락처 (예: 010-XXXX-XXXX)" required>
-        </div>
         <div class="field-row">
+          <input class="input" name="member1Name" placeholder="이름" required>
           <input class="input" name="member2Name" placeholder="이름 (선택)">
-          <input class="input" name="member2Phone" placeholder="연락처 (선택)">
         </div>
-        <div class="field-help note">ℹ︎ 연락처는 운영팀 확인용으로만 사용되며, 참가자 페이지에는 노출되지 않습니다.</div>
+        <div class="field-help note">ℹ︎ 입장 비표에 적힌 이름과 동일하게 적어주세요. (2인 팀은 두 분 모두 적어주세요)</div>
       </div>
 
       <div class="field">
@@ -468,12 +464,10 @@
   function openEditForm(p) {
     editingId = p.id;
     const form = document.getElementById('newProjectForm');
-    const pm = p._privateMembers || (p.members || []).map(name => ({ name, phone: '' }));
+    const memberNames = (p.members || []).slice(0, 2);
     form.team.value = p.team || '';
-    form.member1Name.value = pm[0]?.name || '';
-    form.member1Phone.value = pm[0]?.phone || '';
-    form.member2Name.value = pm[1]?.name || '';
-    form.member2Phone.value = pm[1]?.phone || '';
+    form.member1Name.value = memberNames[0] || '';
+    form.member2Name.value = memberNames[1] || '';
     form.password.value = p._password || '';
     form.url.value = p.url || '';
     form.tagline.value = p.tagline || '';
@@ -500,8 +494,8 @@
     const form = document.getElementById('newProjectForm');
     if (!form.reportValidity()) return;
     const fd = new FormData(form);
-    const members = [{ name: fd.get('member1Name'), phone: fd.get('member1Phone') }];
-    if (fd.get('member2Name')) members.push({ name: fd.get('member2Name'), phone: fd.get('member2Phone') });
+    const memberNames = [fd.get('member1Name')];
+    if (fd.get('member2Name')) memberNames.push(fd.get('member2Name'));
     const now = new Date();
     const projects = loadProjects();
 
@@ -509,12 +503,12 @@
       // 수정 모드
       const idx = projects.findIndex(p => p.id === editingId);
       if (idx >= 0) {
+        const { _privateMembers: _legacy, ...prev } = projects[idx];
         projects[idx] = {
-          ...projects[idx],
+          ...prev,
           team: fd.get('team'),
           tagline: fd.get('tagline'),
-          members: members.map(m => m.name),
-          _privateMembers: members,
+          members: memberNames,
           _password: fd.get('password'),
           url: fd.get('url'),
           details: {
@@ -539,8 +533,7 @@
       id: 'p' + Date.now(),
       team: fd.get('team'),
       tagline: fd.get('tagline'),
-      members: members.map(m => m.name),
-      _privateMembers: members,
+      members: memberNames,
       _password: fd.get('password'),
       url: fd.get('url'),
       registeredAt: `${window.RC.pad(now.getHours())}:${window.RC.pad(now.getMinutes())}`,
