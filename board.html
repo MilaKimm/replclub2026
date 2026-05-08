@@ -154,10 +154,9 @@
   function loadProjects() {
     const v = RCSync.get(STORE_KEY);
     if (Array.isArray(v)) return v;
-    // 첫 진입 — 로컬 시드. rc-sync.js의 404 분기가 이걸 서버로 PUT 함.
-    const init = RC_DATA.projects.map(p => ({ ...p, award: DEMO_AWARDS[p.id] || null }));
-    RCSync.put(STORE_KEY, init);
-    return init;
+    // ⚠️ 빈 캐시 상태에서 절대 서버에 시드를 PUT 하지 않는다 (실 데이터 덮어쓰기 방지).
+    // 첫 폴링 응답(<2s)이 도착하면 RCSync.on 구독자가 자동 재렌더 한다.
+    return [];
   }
   function saveProjects(p) { RCSync.put(STORE_KEY, p); }
 

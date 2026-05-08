@@ -69,8 +69,8 @@
   function loadQA() {
     const v = RCSync.get(STORE_KEY);
     if (Array.isArray(v)) return v;
-    RCSync.put(STORE_KEY, RC_DATA.qa);
-    return RC_DATA.qa;
+    // ⚠️ 빈 캐시 상태에서 절대 시드를 PUT 하지 않는다. 폴링 응답이 채워준다.
+    return [];
   }
   function saveQA(arr) { RCSync.put(STORE_KEY, arr); }
 
