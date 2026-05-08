@@ -22,7 +22,7 @@
   var seeded = {};
   var activeKeys = {};
   var pollTimer = null;
-  var POLL_MS = 5000;
+  var POLL_MS = 2000;
 
   function isStr(v) { return typeof v === 'string'; }
 
@@ -152,17 +152,34 @@
     }
   }
 
+  function refreshAll() {
+    Object.keys(activeKeys).forEach(function (k) { refresh(k); });
+  }
+
+  var visibilityBound = false;
+  function bindVisibilityRefresh() {
+    if (visibilityBound) return;
+    visibilityBound = true;
+    // 탭이 다시 보이거나 포커스 받으면 즉시 새로고침 → "보자마자 최신" 체감
+    try {
+      document.addEventListener('visibilitychange', function () {
+        if (document.visibilityState === 'visible') refreshAll();
+      });
+      window.addEventListener('focus', refreshAll);
+      window.addEventListener('pageshow', refreshAll);
+    } catch (e) {}
+  }
+
   function start(keys) {
     if (Array.isArray(keys)) {
       for (var i = 0; i < keys.length; i++) activeKeys[keys[i]] = 1;
     }
     // 즉시 1회
-    Object.keys(activeKeys).forEach(function (k) { refresh(k); });
+    refreshAll();
+    bindVisibilityRefresh();
     // SPA 라우팅에서 외부에서 interval이 clear됐을 수 있으므로 항상 재생성
     stop();
-    pollTimer = setInterval(function () {
-      Object.keys(activeKeys).forEach(function (k) { refresh(k); });
-    }, POLL_MS);
+    pollTimer = setInterval(refreshAll, POLL_MS);
   }
 
   global.RCSync = {
