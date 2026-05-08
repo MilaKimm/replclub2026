@@ -29,3 +29,8 @@ channel = "stable-25_05"
 [[ports]]
 localPort = 5000
 externalPort = 80
+
+[deployment]
+deploymentTarget = "autoscale"
+build = ["npm", "install", "--omit=dev"]
+run = ["node", "server/index.mjs"]
