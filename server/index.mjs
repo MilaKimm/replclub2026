@@ -69,7 +69,7 @@ app.get("/api/kv/:key", async (req, res) => {
     );
     if (rows.length === 0) {
       res.setHeader("Cache-Control", "no-cache");
-      return res.status(404).json({ key, value: null });
+      return res.status(200).json({ key, value: null });
     }
     const row = rows[0];
     const etag = makeEtag(row.value, row.updated_at);
