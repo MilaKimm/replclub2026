@@ -555,6 +555,24 @@ app.use(
 
 // SPA fallback unnecessary — multi-page static. 404 = 404.
 
+// 모든 라우트 뒤에 등록 — 핸들러에서 throw/rejection 이 흘러나와도
+// 응답을 500으로 끊고 프로세스는 살려둔다 (요청 하나가 서버 전체를 죽이지 않도록).
+app.use((err, _req, res, _next) => {
+  console.error("unhandled route error:", err);
+  if (!res.headersSent) res.status(500).json({ error: "internal error" });
+});
+
+// 프로세스 단에서 예기치 못한 에러가 나면 로그만 남기고 죽지 않게 한다.
+// (autoscale 인프라가 죽은 인스턴스를 살리기는 하지만, 굳이 죽일 필요 없는
+// 비치명적 에러 — 예: 한 요청에서 새는 promise rejection — 으로
+// 전체 서버가 내려가는 것을 방지)
+process.on("unhandledRejection", (reason) => {
+  console.error("unhandledRejection:", reason);
+});
+process.on("uncaughtException", (err) => {
+  console.error("uncaughtException:", err);
+});
+
 initDb()
   .then(() => {
     app.listen(PORT, "0.0.0.0", () => {
