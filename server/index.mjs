@@ -124,8 +124,10 @@ async function withProjectsTx(fn, res) {
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
+    // advisory lock — 행이 없는 경우에도 동시성 보장
+    await client.query("SELECT pg_advisory_xact_lock(hashtext('rc_projects_2026'))");
     const { rows } = await client.query(
-      "SELECT value FROM kv_store WHERE key = 'rc_projects_2026' FOR UPDATE",
+      "SELECT value FROM kv_store WHERE key = 'rc_projects_2026'",
     );
     let arr = rows.length ? rows[0].value : [];
     if (!Array.isArray(arr)) arr = [];
@@ -211,8 +213,9 @@ app.post("/api/comments/append", async (req, res) => {
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
+    await client.query("SELECT pg_advisory_xact_lock(hashtext('rc_comments_2026'))");
     const { rows } = await client.query(
-      "SELECT value FROM kv_store WHERE key = 'rc_comments_2026' FOR UPDATE",
+      "SELECT value FROM kv_store WHERE key = 'rc_comments_2026'",
     );
     let obj = rows.length ? rows[0].value : {};
     if (!obj || typeof obj !== "object" || Array.isArray(obj)) obj = {};
@@ -238,6 +241,119 @@ app.post("/api/comments/append", async (req, res) => {
   } finally {
     client.release();
   }
+});
+
+// ===== 어드민 전용 (비번 검증 생략) — 어드민 URL 자체가 액세스 경계 =====
+app.post("/api/admin/projects/upsert", async (req, res) => {
+  const project = req.body && req.body.project;
+  if (!project || !project.id || !project.team) {
+    return res.status(400).json({ error: "invalid project" });
+  }
+  await withProjectsTx(async (arr) => {
+    const idx = arr.findIndex((p) => p && p.id === project.id);
+    if (idx >= 0) arr[idx] = { ...arr[idx], ...project };
+    else arr.push(project);
+    return arr;
+  }, res);
+});
+
+app.post("/api/admin/projects/delete", async (req, res) => {
+  const { id } = req.body || {};
+  if (!id) return res.status(400).json({ error: "id required" });
+  await withProjectsTx(async (arr) => {
+    const idx = arr.findIndex((p) => p && p.id === id);
+    if (idx < 0) {
+      res.status(404).json({ error: "프로젝트를 찾을 수 없습니다" });
+      return undefined;
+    }
+    arr.splice(idx, 1);
+    return arr;
+  }, res);
+});
+
+// ===== Q&A 머지 헬퍼 + 엔드포인트 =====
+async function withQaTx(fn, res) {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    await client.query("SELECT pg_advisory_xact_lock(hashtext('rc_qa_2026'))");
+    const { rows } = await client.query(
+      "SELECT value FROM kv_store WHERE key = 'rc_qa_2026'",
+    );
+    let arr = rows.length ? rows[0].value : [];
+    if (!Array.isArray(arr)) arr = [];
+    const next = await fn(arr);
+    if (next === undefined) {
+      await client.query("ROLLBACK");
+      return;
+    }
+    const { rows: r2 } = await client.query(
+      `INSERT INTO kv_store (key, value)
+       VALUES ('rc_qa_2026', $1::jsonb)
+       ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()
+       RETURNING value, updated_at`,
+      [JSON.stringify(next)],
+    );
+    await client.query("COMMIT");
+    const row = r2[0];
+    const etag = makeEtag(row.value, row.updated_at);
+    res.setHeader("ETag", etag);
+    res.json({ value: row.value, updatedAt: row.updated_at });
+  } catch (err) {
+    await client.query("ROLLBACK").catch(() => {});
+    console.error("qa tx error", err);
+    if (!res.headersSent) res.status(500).json({ error: "db error" });
+  } finally {
+    client.release();
+  }
+}
+
+// 참가자: 새 질문 등록 / 어드민: 답변 추가·수정 (id 머지)
+app.post("/api/qa/upsert", async (req, res) => {
+  const item = req.body && req.body.item;
+  if (!item || typeof item !== "object" || !item.id) {
+    return res.status(400).json({ error: "invalid qa item" });
+  }
+  // 기본 길이 가드
+  const safe = {
+    id: String(item.id).slice(0, 40),
+    author: item.author != null ? String(item.author).slice(0, 60) : undefined,
+    time: item.time != null ? String(item.time).slice(0, 10) : undefined,
+    body: item.body != null ? String(item.body).slice(0, 1000) : undefined,
+    reply: item.reply === null ? null
+      : (item.reply && typeof item.reply === "object"
+          ? {
+              body: String(item.reply.body || "").slice(0, 1000),
+              time: String(item.reply.time || "").slice(0, 10),
+            }
+          : undefined),
+  };
+  await withQaTx(async (arr) => {
+    const idx = arr.findIndex((q) => q && q.id === safe.id);
+    if (idx >= 0) {
+      const merged = { ...arr[idx] };
+      for (const k of Object.keys(safe)) {
+        if (safe[k] !== undefined) merged[k] = safe[k];
+      }
+      arr[idx] = merged;
+    } else {
+      arr.push({
+        id: safe.id,
+        author: safe.author || "익명",
+        time: safe.time || "",
+        body: safe.body || "",
+        reply: safe.reply || null,
+      });
+    }
+    return arr;
+  }, res);
+});
+
+// 어드민: 질문 삭제
+app.post("/api/qa/delete", async (req, res) => {
+  const { id } = req.body || {};
+  if (!id) return res.status(400).json({ error: "id required" });
+  await withQaTx(async (arr) => arr.filter((q) => q && q.id !== id), res);
 });
 
 // Static files (root + replclubadmin2026/)

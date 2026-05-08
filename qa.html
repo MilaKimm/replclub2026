@@ -69,11 +69,25 @@
   function loadQA() {
     const v = RCSync.get(STORE_KEY);
     if (Array.isArray(v)) return v;
-    // 첫 진입 — 로컬 시드. rc-sync.js의 404 분기가 이걸 서버로 PUT 함.
     RCSync.put(STORE_KEY, RC_DATA.qa);
     return RC_DATA.qa;
   }
   function saveQA(arr) { RCSync.put(STORE_KEY, arr); }
+
+  // 충돌 방지: 새 질문은 서버 머지 엔드포인트로 (트랜잭션)
+  async function upsertQaApi(item) {
+    const res = await fetch('/api/qa/upsert', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ item }),
+    });
+    let data = {};
+    try { data = await res.json(); } catch (e) {}
+    if (!res.ok) throw new Error(data.error || ('서버 오류 ' + res.status));
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(data.value)); } catch (e) {}
+    return data.value;
+  }
 
   function escape(s) {
     return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
@@ -118,24 +132,31 @@
     document.getElementById('qaPending').textContent = all.filter(q => !q.reply).length;
   }
 
-  // 새 질문 등록
-  document.getElementById('qaForm').addEventListener('submit', (e) => {
+  // 새 질문 등록 — 충돌 방지 위해 서버 머지 엔드포인트 사용
+  document.getElementById('qaForm').addEventListener('submit', async (e) => {
     e.preventDefault();
+    const submitBtn = e.target.querySelector('button[type="submit"]');
     const name = document.getElementById('qaName').value.trim();
     const body = document.getElementById('qaBody').value.trim();
     if (!name || !body) return;
-    const all = loadQA();
     const now = new Date();
-    all.push({
-      id: 'q' + Date.now(),
+    const item = {
+      id: 'q' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
       author: name,
       time: `${window.RC.pad(now.getHours())}:${window.RC.pad(now.getMinutes())}`,
       body,
       reply: null,
-    });
-    saveQA(all);
-    document.getElementById('qaBody').value = '';
-    render();
+    };
+    if (submitBtn) submitBtn.disabled = true;
+    try {
+      await upsertQaApi(item);
+      document.getElementById('qaBody').value = '';
+      render();
+    } catch (err) {
+      alert('질문 등록 실패: ' + err.message);
+    } finally {
+      if (submitBtn) submitBtn.disabled = false;
+    }
   });
 
   // 필터

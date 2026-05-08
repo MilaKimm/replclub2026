@@ -232,6 +232,40 @@
   function save(key, v) {
     RCSync.put(key, v);
   }
+
+  // 어드민 머지 호출 (충돌 방지) — 서버가 트랜잭션으로 안전하게 합쳐 저장
+  async function adminApi(url, body) {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify(body),
+    });
+    let data = {};
+    try { data = await res.json(); } catch (e) {}
+    if (!res.ok) throw new Error(data.error || ('서버 오류 ' + res.status));
+    return data.value;
+  }
+  async function adminUpsertProject(p) {
+    const next = await adminApi('/api/admin/projects/upsert', { project: p });
+    try { localStorage.setItem(STORE.projects, JSON.stringify(next)); } catch (e) {}
+    return next;
+  }
+  async function adminDeleteProject(id) {
+    const next = await adminApi('/api/admin/projects/delete', { id });
+    try { localStorage.setItem(STORE.projects, JSON.stringify(next)); } catch (e) {}
+    return next;
+  }
+  async function adminUpsertQa(item) {
+    const next = await adminApi('/api/qa/upsert', { item });
+    try { localStorage.setItem(STORE.qa, JSON.stringify(next)); } catch (e) {}
+    return next;
+  }
+  async function adminDeleteQa(id) {
+    const next = await adminApi('/api/qa/delete', { id });
+    try { localStorage.setItem(STORE.qa, JSON.stringify(next)); } catch (e) {}
+    return next;
+  }
   function escape(s) {
     return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
   }
@@ -443,54 +477,50 @@
 
     // 시상 지정 select
     tb.querySelectorAll('select[data-award-id]').forEach(sel => {
-      sel.addEventListener('change', () => {
+      sel.addEventListener('change', async () => {
         const id = sel.dataset.awardId;
-        const arr = getProjects();
-        const idx = arr.findIndex(p => p.id === id);
-        if (idx >= 0) {
-          arr[idx].award = sel.value || null;
-          save(STORE.projects, arr);
-        }
+        try {
+          await adminUpsertProject({ id, award: sel.value || null,
+            team: (getProjects().find(p => p.id === id) || {}).team });
+        } catch (e) { alert('저장 실패: ' + e.message); }
       });
     });
     // 삭제
     tb.querySelectorAll('button[data-del]').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', async () => {
         if (!confirm(`정말 삭제할까요?`)) return;
-        const id = btn.dataset.del;
-        save(STORE.projects, getProjects().filter(p => p.id !== id));
-        renderProjects();
+        try {
+          await adminDeleteProject(btn.dataset.del);
+          renderProjects();
+        } catch (e) { alert('삭제 실패: ' + e.message); }
       });
     });
     // 수정 (강제) — 단순 alert
     tb.querySelectorAll('button[data-edit]').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', async () => {
         const id = btn.dataset.edit;
         const p = getProjects().find(x => x.id === id);
         const newTagline = prompt('한줄 소개 수정 (취소하면 변경 없음):', p.tagline);
-        if (newTagline !== null) {
-          const arr = getProjects();
-          const idx = arr.findIndex(x => x.id === id);
-          arr[idx].tagline = newTagline;
-          save(STORE.projects, arr);
+        if (newTagline === null) return;
+        try {
+          await adminUpsertProject({ id, team: p.team, tagline: newTagline });
           renderProjects();
-        }
+        } catch (e) { alert('수정 실패: ' + e.message); }
       });
     });
     // 비밀번호 리셋 (분실 시 운영팀 안내용)
     tb.querySelectorAll('button[data-resetpw]').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', async () => {
         const id = btn.dataset.resetpw;
-        const arr = getProjects();
-        const idx = arr.findIndex(p => p.id === id);
-        if (idx < 0) return;
-        const team = arr[idx].team;
-        const current = arr[idx]._password || '(미설정)';
-        const newPw = prompt(`"${team}" 팀 비밀번호 리셋\n현재 비밀번호: ${current}\n\n새 비밀번호 입력 (참가자에게 전달):`);
+        const p = getProjects().find(x => x.id === id);
+        if (!p) return;
+        const current = p._password || '(미설정)';
+        const newPw = prompt(`"${p.team}" 팀 비밀번호 리셋\n현재 비밀번호: ${current}\n\n새 비밀번호 입력 (참가자에게 전달):`);
         if (newPw === null || !newPw.trim()) return;
-        arr[idx]._password = newPw.trim();
-        save(STORE.projects, arr);
-        alert(`✅ 비밀번호 리셋 완료\n팀: ${team}\n새 비번: ${newPw.trim()}\n\n참가자에게 직접 전달해주세요.`);
+        try {
+          await adminUpsertProject({ id, team: p.team, _password: newPw.trim() });
+          alert(`✅ 비밀번호 리셋 완료\n팀: ${p.team}\n새 비번: ${newPw.trim()}\n\n참가자에게 직접 전달해주세요.`);
+        } catch (e) { alert('리셋 실패: ' + e.message); }
       });
     });
   }
@@ -578,53 +608,46 @@
 
     // 답변 등록
     wrap.querySelectorAll('button[data-reply-submit]').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', async () => {
         const id = btn.dataset.replySubmit;
         const input = wrap.querySelector(`input[data-reply-input="${id}"]`);
         const body = input.value.trim();
         if (!body) return;
-        const arr = getQA();
-        const idx = arr.findIndex(x => x.id === id);
-        if (idx >= 0) {
-          const now = new Date();
-          arr[idx].reply = { body, time: `${pad(now.getHours())}:${pad(now.getMinutes())}` };
-          saveQA(arr);
+        const now = new Date();
+        try {
+          await adminUpsertQa({ id, reply: { body, time: `${pad(now.getHours())}:${pad(now.getMinutes())}` } });
           renderQA();
-        }
+        } catch (e) { alert('답변 등록 실패: ' + e.message); }
       });
     });
     wrap.querySelectorAll('button[data-edit-reply]').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', async () => {
         const id = btn.dataset.editReply;
         const q = getQA().find(x => x.id === id);
         const next = prompt('답변 수정:', q.reply.body);
-        if (next !== null) {
-          const arr = getQA();
-          const idx = arr.findIndex(x => x.id === id);
-          arr[idx].reply.body = next;
-          saveQA(arr);
+        if (next === null) return;
+        try {
+          await adminUpsertQa({ id, reply: { body: next, time: q.reply.time } });
           renderQA();
-        }
+        } catch (e) { alert('수정 실패: ' + e.message); }
       });
     });
     wrap.querySelectorAll('button[data-del-reply]').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', async () => {
         if (!confirm('답변 삭제할까요?')) return;
-        const id = btn.dataset.delReply;
-        const arr = getQA();
-        const idx = arr.findIndex(x => x.id === id);
-        if (idx >= 0) {
-          arr[idx].reply = null;
-          saveQA(arr);
+        try {
+          await adminUpsertQa({ id: btn.dataset.delReply, reply: null });
           renderQA();
-        }
+        } catch (e) { alert('삭제 실패: ' + e.message); }
       });
     });
     wrap.querySelectorAll('button[data-del-q]').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', async () => {
         if (!confirm('질문 삭제할까요?')) return;
-        saveQA(getQA().filter(x => x.id !== btn.dataset.delQ));
-        renderQA();
+        try {
+          await adminDeleteQa(btn.dataset.delQ);
+          renderQA();
+        } catch (e) { alert('삭제 실패: ' + e.message); }
       });
     });
   }
