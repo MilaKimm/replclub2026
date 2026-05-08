@@ -6,11 +6,16 @@
       <a href="index.html" class="brand-link">
         <img src="assets/logo.svg" alt="REPL CLUB" class="brand-logo">
       </a>
+      <button type="button" class="nav-toggle" id="navToggle" aria-label="메뉴 열기" aria-expanded="false">
+        <span class="nav-toggle-bar"></span>
+        <span class="nav-toggle-bar"></span>
+        <span class="nav-toggle-bar"></span>
+      </button>
       <div class="clock-card">
         <div class="clock-label">현재시간</div>
         <div class="clock" id="clock">--<span class="colon">:</span>--<span class="colon">:</span>--</div>
       </div>
-      <ul class="menu">
+      <ul class="menu" id="menu">
         <li><a href="index.html" data-page="home"><span class="num">01</span> 홈</a></li>
         <li><a href="info.html" data-page="info"><span class="num">02</span> 안내</a></li>
         <li><a href="board.html" data-page="board"><span class="num">03</span> 레플 보드</a></li>
@@ -32,6 +37,24 @@
     if (active) {
       const link = slot.querySelector(`.menu a[data-page="${active}"]`);
       if (link) link.classList.add('active');
+    }
+    const toggle = slot.querySelector('#navToggle');
+    const menu = slot.querySelector('#menu');
+    if (toggle && menu) {
+      toggle.addEventListener('click', () => {
+        const open = menu.classList.toggle('open');
+        toggle.classList.toggle('open', open);
+        toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        toggle.setAttribute('aria-label', open ? '메뉴 닫기' : '메뉴 열기');
+      });
+      // 메뉴 항목 클릭 시 자동 닫기 (모바일 UX)
+      menu.querySelectorAll('a').forEach(a => {
+        a.addEventListener('click', () => {
+          menu.classList.remove('open');
+          toggle.classList.remove('open');
+          toggle.setAttribute('aria-expanded', 'false');
+        });
+      });
     }
   }
 
