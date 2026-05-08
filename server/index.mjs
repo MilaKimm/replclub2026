@@ -116,6 +116,130 @@ app.put("/api/kv/:key", async (req, res) => {
   }
 });
 
+// ============ 충돌 방지 머지 엔드포인트 ============
+// 동시 등록/댓글 시 last-write-wins 으로 데이터 유실되는 문제를 막기 위해
+// 서버가 트랜잭션 + FOR UPDATE 락 안에서 배열을 병합한다.
+
+async function withProjectsTx(fn, res) {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const { rows } = await client.query(
+      "SELECT value FROM kv_store WHERE key = 'rc_projects_2026' FOR UPDATE",
+    );
+    let arr = rows.length ? rows[0].value : [];
+    if (!Array.isArray(arr)) arr = [];
+    const next = await fn(arr, client);
+    if (next === undefined) {
+      await client.query("ROLLBACK");
+      return; // fn 이 res 응답까지 처리함
+    }
+    const { rows: r2 } = await client.query(
+      `INSERT INTO kv_store (key, value)
+       VALUES ('rc_projects_2026', $1::jsonb)
+       ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()
+       RETURNING value, updated_at`,
+      [JSON.stringify(next)],
+    );
+    await client.query("COMMIT");
+    const row = r2[0];
+    const etag = makeEtag(row.value, row.updated_at);
+    res.setHeader("ETag", etag);
+    res.json({ value: row.value, updatedAt: row.updated_at });
+  } catch (err) {
+    await client.query("ROLLBACK").catch(() => {});
+    console.error("projects tx error", err);
+    if (!res.headersSent) res.status(500).json({ error: "db error" });
+  } finally {
+    client.release();
+  }
+}
+
+// 신규 등록 또는 수정 (id 기준 머지). 수정 시 비밀번호 검증.
+app.post("/api/projects/upsert", async (req, res) => {
+  const project = req.body && req.body.project;
+  if (!project || typeof project !== "object" || !project.id || !project.team) {
+    return res.status(400).json({ error: "invalid project" });
+  }
+  await withProjectsTx(async (arr) => {
+    const idx = arr.findIndex((p) => p && p.id === project.id);
+    if (idx >= 0) {
+      const existing = arr[idx];
+      if (existing._password && existing._password !== project._password) {
+        res.status(403).json({ error: "비밀번호가 일치하지 않습니다" });
+        return undefined;
+      }
+      arr[idx] = { ...existing, ...project };
+    } else {
+      arr.push(project);
+    }
+    return arr;
+  }, res);
+});
+
+// 삭제 (비밀번호 검증)
+app.post("/api/projects/delete", async (req, res) => {
+  const { id, password } = req.body || {};
+  if (!id) return res.status(400).json({ error: "id required" });
+  await withProjectsTx(async (arr) => {
+    const idx = arr.findIndex((p) => p && p.id === id);
+    if (idx < 0) {
+      res.status(404).json({ error: "프로젝트를 찾을 수 없습니다" });
+      return undefined;
+    }
+    const existing = arr[idx];
+    if (existing._password && existing._password !== password) {
+      res.status(403).json({ error: "비밀번호가 일치하지 않습니다" });
+      return undefined;
+    }
+    arr.splice(idx, 1);
+    return arr;
+  }, res);
+});
+
+// 댓글 추가 (트랜잭션 안에서 객체에 append)
+app.post("/api/comments/append", async (req, res) => {
+  const { projectId, comment } = req.body || {};
+  if (!projectId || !comment || !comment.name || !comment.body) {
+    return res.status(400).json({ error: "invalid comment" });
+  }
+  const safeComment = {
+    name: String(comment.name).slice(0, 60),
+    body: String(comment.body).slice(0, 500),
+    time: String(comment.time || "").slice(0, 10),
+  };
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const { rows } = await client.query(
+      "SELECT value FROM kv_store WHERE key = 'rc_comments_2026' FOR UPDATE",
+    );
+    let obj = rows.length ? rows[0].value : {};
+    if (!obj || typeof obj !== "object" || Array.isArray(obj)) obj = {};
+    const arr = Array.isArray(obj[projectId]) ? obj[projectId].slice() : [];
+    arr.push(safeComment);
+    obj[projectId] = arr;
+    const { rows: r2 } = await client.query(
+      `INSERT INTO kv_store (key, value)
+       VALUES ('rc_comments_2026', $1::jsonb)
+       ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()
+       RETURNING value, updated_at`,
+      [JSON.stringify(obj)],
+    );
+    await client.query("COMMIT");
+    const row = r2[0];
+    const etag = makeEtag(row.value, row.updated_at);
+    res.setHeader("ETag", etag);
+    res.json({ value: row.value, updatedAt: row.updated_at });
+  } catch (err) {
+    await client.query("ROLLBACK").catch(() => {});
+    console.error("comments tx error", err);
+    if (!res.headersSent) res.status(500).json({ error: "db error" });
+  } finally {
+    client.release();
+  }
+});
+
 // Static files (root + replclubadmin2026/)
 app.use(
   express.static(ROOT, {

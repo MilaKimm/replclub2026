@@ -160,6 +160,42 @@
     return init;
   }
   function saveProjects(p) { RCSync.put(STORE_KEY, p); }
+
+  // 충돌 방지: 등록/수정/삭제/댓글은 전용 머지 엔드포인트로
+  // 서버가 트랜잭션 + FOR UPDATE 락으로 안전하게 합쳐 저장한다.
+  async function apiPost(url, body) {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify(body),
+    });
+    let data = {};
+    try { data = await res.json(); } catch (e) {}
+    if (!res.ok) throw new Error(data.error || ('서버 오류 ' + res.status));
+    return data;
+  }
+  function absorbProjects(value) {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(value)); } catch (e) {}
+  }
+  function absorbComments(value) {
+    try { localStorage.setItem(COMMENTS_KEY, JSON.stringify(value)); } catch (e) {}
+  }
+  async function upsertProjectApi(project) {
+    const data = await apiPost('/api/projects/upsert', { project });
+    absorbProjects(data.value);
+    return data.value;
+  }
+  async function deleteProjectApi(id, password) {
+    const data = await apiPost('/api/projects/delete', { id, password });
+    absorbProjects(data.value);
+    return data.value;
+  }
+  async function appendCommentApi(projectId, comment) {
+    const data = await apiPost('/api/comments/append', { projectId, comment });
+    absorbComments(data.value);
+    return data.value;
+  }
   function getPhase() {
     const v = RCSync.get(AWARD_KEY);
     return (typeof v === 'string' && v) ? v : 'hidden';
@@ -405,17 +441,21 @@
     document.getElementById('detailModal').classList.add('open');
     bindCloseButtons();
 
-    document.getElementById('commentSubmit').addEventListener('click', () => {
+    document.getElementById('commentSubmit').addEventListener('click', async () => {
+      const btn = document.getElementById('commentSubmit');
       const name = document.getElementById('commentName').value.trim();
       const body = document.getElementById('commentBody').value.trim();
       if (!name || !body) { alert('이름과 내용을 입력해주세요'); return; }
-      const all = loadComments();
-      const arr = all[id] || [];
       const now = new Date();
-      arr.push({ name, body, time: `${window.RC.pad(now.getHours())}:${window.RC.pad(now.getMinutes())}` });
-      all[id] = arr;
-      saveComments(all);
-      openDetail(id); // 재렌더
+      const comment = { name, body, time: `${window.RC.pad(now.getHours())}:${window.RC.pad(now.getMinutes())}` };
+      btn.disabled = true;
+      try {
+        await appendCommentApi(id, comment);
+        openDetail(id); // 재렌더
+      } catch (e) {
+        alert('댓글 등록 실패: ' + e.message);
+        btn.disabled = false;
+      }
     });
 
     // 수정 / 삭제 (본인 프로젝트만)
@@ -429,7 +469,7 @@
         }
         openEditForm(p);
       });
-      inner.querySelector('[data-delete-project]').addEventListener('click', () => {
+      inner.querySelector('[data-delete-project]').addEventListener('click', async () => {
         const pw = prompt('삭제하려면 비밀번호를 입력해주세요:');
         if (pw === null) return;
         if (pw !== p._password) {
@@ -437,9 +477,13 @@
           return;
         }
         if (!confirm(`정말 "${p.team}" 프로젝트를 삭제할까요? 되돌릴 수 없습니다.`)) return;
-        saveProjects(loadProjects().filter(x => x.id !== p.id));
-        document.getElementById('detailModal').classList.remove('open');
-        render();
+        try {
+          await deleteProjectApi(p.id, pw);
+          document.getElementById('detailModal').classList.remove('open');
+          render();
+        } catch (e) {
+          alert('삭제 실패: ' + e.message);
+        }
       });
     }
   }
@@ -490,45 +534,51 @@
   });
   bindCloseButtons();
 
-  document.getElementById('submitNewProject').addEventListener('click', () => {
+  document.getElementById('submitNewProject').addEventListener('click', async () => {
     const form = document.getElementById('newProjectForm');
     if (!form.reportValidity()) return;
+    const submitBtn = document.getElementById('submitNewProject');
     const fd = new FormData(form);
     const memberNames = [fd.get('member1Name')];
     if (fd.get('member2Name')) memberNames.push(fd.get('member2Name'));
     const now = new Date();
-    const projects = loadProjects();
 
     if (editingId) {
-      // 수정 모드
-      const idx = projects.findIndex(p => p.id === editingId);
-      if (idx >= 0) {
-        const { _privateMembers: _legacy, ...prev } = projects[idx];
-        projects[idx] = {
-          ...prev,
-          team: fd.get('team'),
-          tagline: fd.get('tagline'),
-          members: memberNames,
-          _password: fd.get('password'),
-          url: fd.get('url'),
-          details: {
-            problem: fd.get('problem'),
-            target: fd.get('target'),
-            better: fd.get('better'),
-            mvp: fd.get('mvp'),
-            progress: fd.get('progress'),
-          },
-        };
-        saveProjects(projects);
+      // 수정 모드 — id 유지, 서버가 비밀번호 검증 후 머지
+      const projects = loadProjects();
+      const prev = projects.find(p => p.id === editingId) || {};
+      const updated = {
+        ...prev,
+        id: editingId,
+        team: fd.get('team'),
+        tagline: fd.get('tagline'),
+        members: memberNames,
+        _password: fd.get('password'),
+        url: fd.get('url'),
+        details: {
+          problem: fd.get('problem'),
+          target: fd.get('target'),
+          better: fd.get('better'),
+          mvp: fd.get('mvp'),
+          progress: fd.get('progress'),
+        },
+      };
+      submitBtn.disabled = true;
+      try {
+        await upsertProjectApi(updated);
         resetNewForm();
         document.getElementById('newProjectModal').classList.remove('open');
         render();
         alert('수정 완료!');
+      } catch (e) {
+        alert('수정 실패: ' + e.message);
+      } finally {
+        submitBtn.disabled = false;
       }
       return;
     }
 
-    // 신규 등록
+    // 신규 등록 — 서버가 id 기준 머지 (충돌 방지)
     const newP = {
       id: 'p' + Date.now(),
       team: fd.get('team'),
@@ -547,12 +597,18 @@
         progress: fd.get('progress'),
       },
     };
-    projects.push(newP);
-    saveProjects(projects);
-    resetNewForm();
-    document.getElementById('newProjectModal').classList.remove('open');
-    render();
-    alert('등록 완료! 보드 상단에서 확인하세요.');
+    submitBtn.disabled = true;
+    try {
+      await upsertProjectApi(newP);
+      resetNewForm();
+      document.getElementById('newProjectModal').classList.remove('open');
+      render();
+      alert('등록 완료! 보드 상단에서 확인하세요.');
+    } catch (e) {
+      alert('등록 실패: ' + e.message);
+    } finally {
+      submitBtn.disabled = false;
+    }
   });
 
   // overlay 클릭 시 닫기 — 상세 모달만 (등록 모달은 작성 중 실수 방지)
