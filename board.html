@@ -626,7 +626,9 @@
   RCSync.on(STORE_KEY, render);
   RCSync.on(AWARD_KEY, render);
   RCSync.on(COMMENTS_KEY, render);
-  RCSync.start([STORE_KEY, AWARD_KEY, COMMENTS_KEY]);
+  // 어드민이 타임테이블 마감시간을 변경하면 즉시 카운트다운에 반영
+  RCSync.on('rc_timetable_times', tickBoardCountdown);
+  RCSync.start([STORE_KEY, AWARD_KEY, COMMENTS_KEY, 'rc_timetable_times']);
 })();
 </script>
 

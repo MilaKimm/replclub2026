@@ -68,10 +68,10 @@
       `${pad(d.getHours())}<span class="colon">:</span>${pad(d.getMinutes())}<span class="colon">:</span>${pad(d.getSeconds())}`;
   }
 
-  // 마감 시간 = 어드민 타임테이블의 '제출 마감' 시간 (index 5).
-  // 어드민이 시간 수정하면 localStorage('rc_timetable_times')에 저장됨.
+  // 마감 시간 = 행사 날짜(data.js eventDate) + 어드민 타임테이블의 '제출 마감' 시간 (index 5).
+  // - 행사일이 지나면 매일 카운트다운이 새로 시작되지 않고 영구히 '마감' 으로 표시됨.
+  // - 어드민이 시간 수정하면 localStorage('rc_timetable_times')에 저장되어 즉시 반영.
   function getDeadline() {
-    const now = new Date();
     let h = 21, m = 45;
     try {
       const raw = localStorage.getItem('rc_timetable_times');
@@ -86,9 +86,14 @@
         }
       }
     } catch (e) {}
-    const d = new Date(now);
-    d.setHours(h, m, 0, 0);
-    return d;
+    // eventDate 예: "2026.05.08 (FRI)" → year/month/day 추출
+    let y = 2026, mo = 5, da = 8;
+    try {
+      const ev = (window.RC_DATA && window.RC_DATA.config && window.RC_DATA.config.eventDate) || '';
+      const mm = ev.match(/(\d{4})[.\-\/](\d{1,2})[.\-\/](\d{1,2})/);
+      if (mm) { y = +mm[1]; mo = +mm[2]; da = +mm[3]; }
+    } catch (e) {}
+    return new Date(y, mo - 1, da, h, m, 0, 0);
   }
 
   function tickCountdown() {
